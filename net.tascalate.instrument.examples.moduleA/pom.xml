@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>net.tascalate.instrument</groupId>
+		<artifactId>net.tascalate.instrument.parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../</relativePath>
+	</parent>
+
+	<artifactId>net.tascalate.instrument.examples.moduleA</artifactId>
+	<packaging>jar</packaging>
+
+	<name>Tascalate Instrument / SPI / Examples / Module A</name>
+
+	<properties>
+		<license.header>../HEADER-DERRIVED.txt</license.header>
+	</properties>
+
+	<dependencies>
+		<!-- Compile-only dependency on *.spi9 *, scope PROVIDED -->
+		<dependency>
+			<groupId>net.tascalate.instrument</groupId>
+			<artifactId>net.tascalate.instrument.spi9</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- Runtime-only dependency on multi-release *.spi *, scope RUNTIME -->
+		<!-- It's impossible to compile with multi-release JAR, hence 2 deps -->
+		<dependency>
+			<groupId>net.tascalate.instrument</groupId>
+			<artifactId>net.tascalate.instrument.spi</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>
