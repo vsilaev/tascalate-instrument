@@ -40,12 +40,12 @@ import net.tascalate.instrument.examples.moduleB.SampleClassB;
 import net.tascalate.instrument.spi.ClassDefiner;
 import net.tascalate.instrument.spi.ClassDefiners;
 
-public class OpenPackagesDemo9 {
+public class ModularPackagesDemo9 {
 
     public static void main(String[] args) throws Throwable {
         System.out.println("Hello");
 
-        Module myModule = OpenPackagesDemo9.class.getModule();
+        Module myModule = ModularPackagesDemo9.class.getModule();
         System.out.println("App is running in module " + myModule.getName());
 
         demoModule(SampleClassA.class, "net.tascalate.instrument.examples.moduleA.internalY.GuttenTagModuleA");
@@ -67,8 +67,8 @@ public class OpenPackagesDemo9 {
                                readResource(dynamicClassName.substring(dynamicClassName.lastIndexOf('.') + 1) + ".bytes"),
                                SampleClassB.class.getProtectionDomain());
 
+        // Pretty questionable deprecation of API
         @SuppressWarnings("deprecation")
-        // Oracle is getting insane about warnings
         Runnable obj = cls.newInstance();
         obj.run();
         System.out.println("<<<<<<<<");
@@ -82,8 +82,8 @@ public class OpenPackagesDemo9 {
         ClassDefiners.Lookup definers = ClassDefiners.of(module, module.getClassLoader());
         /*
          * Effectively, the call above is just the same as ClassDefiners.of(module); Two
-         * args form is used to show that same pattern will be used with Java 8 and Java
-         * 9+ from instrumentation agents. Obviously, Java 8 agent will use
+         * args form is used to show that same pattern will be used with Java 6-8 and Java
+         * 9-11+ from instrumentation agents. Obviously, Java 6-8 agent will use
          * ClassDefiners.of(null, classLoaderArg);
          */
 

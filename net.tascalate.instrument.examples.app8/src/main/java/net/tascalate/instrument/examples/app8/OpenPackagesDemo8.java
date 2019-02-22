@@ -39,7 +39,7 @@ import java.security.ProtectionDomain;
 import net.tascalate.instrument.spi.ClassDefiner;
 import net.tascalate.instrument.spi.ClassDefiners;
 
-public class OpenPackageDemo8 {
+public class OpenPackagesDemo8 {
     
     public static void main(String[] args) throws Throwable {
         System.out.println("Hello");
@@ -59,7 +59,7 @@ public class OpenPackageDemo8 {
                                ClassLoader.getSystemClassLoader(), 
                                dynamicClassName,
                                readResource(dynamicClassName.substring(dynamicClassName.lastIndexOf('.') + 1) + ".bytes"),
-                               OpenPackageDemo8.class.getProtectionDomain());
+                               OpenPackagesDemo8.class.getProtectionDomain());
 
         Runnable obj = cls.newInstance();
         obj.run();
@@ -75,8 +75,8 @@ public class OpenPackageDemo8 {
         ClassDefiners.Lookup definers = ClassDefiners.of(module, classLoader);
         /*
          * Effectively, the call above is just the same as ClassDefiners.of(classLoader); 
-         * Two args form is used to show that same pattern will be used with Java 8 and 
-         * Java 9+ from instrumentation agents.
+         * Two args form is used to show that same pattern will be used with Java 6-8 and 
+         * Java 9-11+ from instrumentation agents.
          */
 
         System.out.println("Get Definers: " + definers);

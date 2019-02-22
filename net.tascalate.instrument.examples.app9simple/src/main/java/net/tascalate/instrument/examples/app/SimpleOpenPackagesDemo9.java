@@ -61,8 +61,8 @@ public class SimpleOpenPackagesDemo9 {
                                readResource(dynamicClassName.substring(dynamicClassName.lastIndexOf('.') + 1) + ".bytes"),
                                SimpleOpenPackagesDemo9.class.getProtectionDomain());
 
+        // Pretty questionable deprecation of API
         @SuppressWarnings("deprecation")
-        // Oracle is getting insane about warnings
         Runnable obj = cls.newInstance();
         obj.run();
         System.out.println("<<<<<<<<");
@@ -76,8 +76,8 @@ public class SimpleOpenPackagesDemo9 {
         ClassDefiners.Lookup definers = ClassDefiners.of(module, module.getClassLoader());
         /*
          * Effectively, the call above is just the same as ClassDefiners.of(module); Two
-         * args form is used to show that same pattern will be used with Java 8 and Java
-         * 9+ from instrumentation agents. Obviously, Java 8 agent will use
+         * args form is used to show that same pattern will be used with Java 6-8 and Java
+         * 9-11+ from instrumentation agents. Obviously, Java 6-8 agent will use
          * ClassDefiners.of(null, classLoaderArg);
          */
 
