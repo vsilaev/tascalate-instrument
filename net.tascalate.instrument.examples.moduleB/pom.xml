@@ -13,10 +13,6 @@
 
 	<name>Tascalate Instrument / Examples / Module B</name>
 
-	<properties>
-		<license.header>../HEADER-DERRIVED.txt</license.header>
-	</properties>
-
 	<dependencies>
 		<!-- Compile-only dependency on *.spi9 *, scope PROVIDED -->
 		<dependency>

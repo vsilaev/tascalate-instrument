@@ -13,10 +13,6 @@
 
 	<name>Tascalate Instrument / SPI / Java 9</name>
 
-	<properties>
-		<license.header>../HEADER-DERRIVED.txt</license.header>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>

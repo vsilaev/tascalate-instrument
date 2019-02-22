@@ -13,10 +13,6 @@
 
 	<name>Tascalate Instrument / Examples / Java-8 APP</name>
 
-	<properties>
-		<license.header>../HEADER-DERRIVED.txt</license.header>
-	</properties>
-
 	<dependencies>
 		<!-- Java 8 apps may enjoy just single dependency to  -->
 		<!-- multi-release JAR for both compile and run-time  -->

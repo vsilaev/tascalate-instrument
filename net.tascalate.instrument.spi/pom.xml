@@ -13,10 +13,6 @@
 
 	<name>Tascalate Instrument / SPI / Multi-version</name>
 
-	<properties>
-		<license.header>../HEADER-DERRIVED.txt</license.header>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>net.tascalate.instrument</groupId>

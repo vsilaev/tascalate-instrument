@@ -13,10 +13,6 @@
 
 	<name>Tascalate Instrument / Examples / Java-9 Modular APP</name>
 
-	<properties>
-		<license.header>../HEADER-DERRIVED.txt</license.header>
-	</properties>
-
 	<dependencies>
 		<!-- Compile-only dependency on *.spi9 *, scope PROVIDED -->
 		<dependency>
