@@ -55,5 +55,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.MODULE)
 public @interface AllowDynamicClasses {
-	Class<? extends AbstractOpenPackage>[] value();
+    Class<? extends AbstractOpenPackage>[] value();
 }

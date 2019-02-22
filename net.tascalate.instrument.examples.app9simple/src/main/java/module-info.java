@@ -41,7 +41,7 @@ import net.tascalate.instrument.examples.app.dynamic.OpenPackage;
  */
 @AllowDynamicClasses(OpenPackage.class)
 module net.tascalate.instrument.examples.app {
-	requires net.tascalate.instrument.spi;	
-	
-	opens net.tascalate.instrument.examples.app.dynamic to net.tascalate.instrument.spi;
+requires net.tascalate.instrument.spi;
+
+    opens net.tascalate.instrument.examples.app.dynamic to net.tascalate.instrument.spi;
 }
