@@ -73,7 +73,7 @@ public class SimpleOpenPackagesDemo9 {
                                                    byte[] classBytes,
                                                    ProtectionDomain pd) throws ReflectiveOperationException {
 
-        ClassDefiners definers = ClassDefiners.of(module, module.getClassLoader());
+        ClassDefiners.Lookup definers = ClassDefiners.of(module, module.getClassLoader());
         /*
          * Effectively, the call above is just the same as ClassDefiners.of(module); Two
          * args form is used to show that same pattern will be used with Java 8 and Java
@@ -85,9 +85,10 @@ public class SimpleOpenPackagesDemo9 {
 
         String packageName = className.substring(0, className.lastIndexOf('.'));
 
-        ClassDefiner definer = definers
-                .lookup(packageName)
-                .orElseThrow(() -> new IllegalArgumentException("No class definer exists for package " + packageName));
+        ClassDefiner definer = definers.lookup(packageName);
+        if (null == definer) {
+            throw new IllegalArgumentException("No class definer exists for package " + packageName);
+        }
 
         System.out.println("Created definer: " + definer);
 

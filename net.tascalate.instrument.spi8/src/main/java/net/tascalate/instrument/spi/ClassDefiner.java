@@ -39,7 +39,7 @@ import java.security.ProtectionDomain;
  * @author vsilaev
  * @see ClassDefiners
  */
-@FunctionalInterface
+/*@FunctionalInterface*/
 public interface ClassDefiner {
     Class<?> defineClass(byte[] classBytes, ProtectionDomain protectionDomain) throws ReflectiveOperationException;
 }

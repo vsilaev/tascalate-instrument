@@ -36,7 +36,6 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,23 +44,23 @@ import net.tascalate.instrument.api.AllowDynamicClasses;
 import net.tascalate.instrument.spi.ClassDefiner;
 import net.tascalate.instrument.spi.ClassDefiners;
 
-class DefaultClassDefiners implements ClassDefiners {
+class ModuleClassDefiners implements ClassDefiners.Lookup {
 
     private final WeakReference<Module> targetModule;
     private final List<WeakReference<Class<?>>> packageClasses;
     private final MethodHandles.Lookup selfLookup = MethodHandles.lookup();
     private final Map<String, ClassDefiner> cachedDefiners = new HashMap<>();
 
-    DefaultClassDefiners(Module targetModule, Class<? extends AbstractOpenPackage>[] packageClasses) {
+    ModuleClassDefiners(Module targetModule, Class<? extends AbstractOpenPackage>[] packageClasses) {
         this.targetModule = new WeakReference<>(targetModule);
         // TODO: is keeping hard references is ok / mandatory?
         this.packageClasses = Stream.of(packageClasses)
-                                    .map(DefaultClassDefiners::weakReferenceOf)
+                                    .map(ModuleClassDefiners::weakReferenceOf)
                                     .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<ClassDefiner> lookup(String packageName) throws ReflectiveOperationException {
+    public ClassDefiner lookup(String packageName) throws ReflectiveOperationException {
         ClassDefiner definer;
         synchronized (cachedDefiners) {
             definer = cachedDefiners.get(packageName);
@@ -70,7 +69,7 @@ class DefaultClassDefiners implements ClassDefiners {
             }
             cachedDefiners.put(packageName, definer);
         }
-        return definer == NO_DEFINER ? Optional.empty() : Optional.of(definer);
+        return definer == NO_DEFINER ? null : definer;
     }
 
     private ClassDefiner lookupInternal(String packageName) throws ReflectiveOperationException {

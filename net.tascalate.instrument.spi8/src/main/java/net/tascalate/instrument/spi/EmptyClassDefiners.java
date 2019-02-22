@@ -31,15 +31,13 @@
  */
 package net.tascalate.instrument.spi;
 
-import java.util.Optional;
-
-class EmptyClassDefiners implements ClassDefiners {
+final class EmptyClassDefiners implements ClassDefiners.Lookup {
     private EmptyClassDefiners() {}
 
     @Override
-    public Optional<ClassDefiner> lookup(String packageName) {
-        return Optional.empty();
+    public ClassDefiner lookup(String packageName) {
+        return null;
     }
 
-    static final ClassDefiners INSTANCE = new EmptyClassDefiners();
+    static final ClassDefiners.Lookup INSTANCE = new EmptyClassDefiners();
 }

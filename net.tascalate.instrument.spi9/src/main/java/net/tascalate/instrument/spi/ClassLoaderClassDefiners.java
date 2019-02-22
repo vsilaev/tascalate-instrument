@@ -33,15 +33,14 @@ package net.tascalate.instrument.spi;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
-import java.util.Optional;
 
 import net.tascalate.instrument.spi.ClassDefiner;
 import net.tascalate.instrument.spi.ClassDefiners;
 
-class LegacyClassDefiners implements ClassDefiners {
+class ClassLoaderClassDefiners implements ClassDefiners.Lookup {
 
     private final WeakReference<ClassLoader> classLoaderRef;
     
@@ -65,30 +64,34 @@ class LegacyClassDefiners implements ClassDefiners {
         }
     };
 
-    LegacyClassDefiners(ClassLoader classLoader) {
+    ClassLoaderClassDefiners(ClassLoader classLoader) {
         this.classLoaderRef = new WeakReference<>(classLoader);
     }
 
     @Override
-    public Optional<ClassDefiner> lookup(String packageName) throws ReflectiveOperationException {
-        return Optional.of(definer);
+    public ClassDefiner lookup(String packageName) throws ReflectiveOperationException {
+        return definer;
     }
 
     private static final MethodHandle DEFINE_CLASS;
 
-    // With Java 8 we may get access to accessible protected method
-    private static MethodHandle findDefineClassJ8() throws ReflectiveOperationException {
-        Method m = ClassLoader.class.getDeclaredMethod(
-            "defineClass", String.class, byte[].class, int.class, int.class, ProtectionDomain.class
-        );
-        m.setAccessible(true);
-        return MethodHandles.lookup().unreflect(m);
-
+    // With Java 9 it's necessary to do a private lookup
+    // to the package opened via command line
+    private static MethodHandle findDefineClassJ9() throws ReflectiveOperationException {
+        return MethodHandles.privateLookupIn(ClassLoader.class, MethodHandles.lookup())
+                            .findVirtual(ClassLoader.class,
+                                         "defineClass", 
+                                         MethodType.methodType(Class.class, 
+                                                               String.class, 
+                                                               byte[].class, 
+                                                               int.class, 
+                                                               int.class,
+                                                               ProtectionDomain.class));
     }
 
     static {
         try {
-            DEFINE_CLASS = findDefineClassJ8();
+            DEFINE_CLASS = findDefineClassJ9();
         } catch (ReflectiveOperationException ex) {
             throw new RuntimeException(ex);
         }
