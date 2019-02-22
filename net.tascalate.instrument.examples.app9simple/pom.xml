@@ -8,38 +8,36 @@
 		<relativePath>../</relativePath>
 	</parent>
 
-	<artifactId>net.tascalate.instrument.examples.app8</artifactId>
+	<artifactId>net.tascalate.instrument.examples.app9simple</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Tascalate Instrument / Examples / Java-8 APP</name>
+	<name>Tascalate Instrument / Examples / Java-9 Simple App</name>
 
 	<properties>
 		<license.header>../HEADER-DERRIVED.txt</license.header>
 	</properties>
 
 	<dependencies>
-		<!-- Java 8 apps may enjoy just single dependency to  -->
-		<!-- multi-release JAR for both compile and run-time  -->
+		<!-- Compile-only dependency on *.spi9 *, scope PROVIDED -->
+		<dependency>
+			<groupId>net.tascalate.instrument</groupId>
+			<artifactId>net.tascalate.instrument.spi9</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- Runtime-only dependency on multi-release *.spi *, scope RUNTIME -->
+		<!-- It's impossible to compile with multi-release JAR, hence 2 deps -->
 		<dependency>
 			<groupId>net.tascalate.instrument</groupId>
 			<artifactId>net.tascalate.instrument.spi</artifactId>
 			<version>${project.version}</version>
+			<scope>runtime</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<release>8</release>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

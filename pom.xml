@@ -42,14 +42,14 @@
 		<module>net.tascalate.instrument.spi8</module>
 		<module>net.tascalate.instrument.spi9</module>
 		<module>net.tascalate.instrument.spi</module>
+		<module>net.tascalate.instrument.examples.app8</module>
+		<module>net.tascalate.instrument.examples.app9simple</module>
 		<module>net.tascalate.instrument.examples.moduleA</module>
 		<module>net.tascalate.instrument.examples.moduleB</module>
-		<module>net.tascalate.instrument.examples.app9</module>
-		<module>net.tascalate.instrument.examples.app8</module>
+		<module>net.tascalate.instrument.examples.app9modular</module>
 	</modules>
 
 	<properties>
-                <asmx.version>7.0.0</asmx.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 

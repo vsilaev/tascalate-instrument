@@ -11,7 +11,7 @@
 	<artifactId>net.tascalate.instrument.examples.moduleB</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Tascalate Instrument / SPI / Examples / Module B</name>
+	<name>Tascalate Instrument / Examples / Module B</name>
 
 	<properties>
 		<license.header>../HEADER-DERRIVED.txt</license.header>
