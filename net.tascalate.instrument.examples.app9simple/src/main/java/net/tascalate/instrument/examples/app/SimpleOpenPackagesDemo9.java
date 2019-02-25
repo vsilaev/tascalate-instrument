@@ -32,6 +32,8 @@
 package net.tascalate.instrument.examples.app;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 
 import net.tascalate.instrument.spi.ClassDefiner;
@@ -40,6 +42,9 @@ import net.tascalate.instrument.spi.ClassDefiners;
 public class SimpleOpenPackagesDemo9 {
 
     public static void main(String[] args) throws Throwable {
+    	MyClassLoader myCL = new MyClassLoader(ClassLoader.getSystemClassLoader());
+    	System.out.println(myCL + " ? " + myCL.isRegisteredAsParallelCapable());
+    	System.out.println(myCL.safeGetClassLoadingLock("a.x.y.ZClass"));
         System.out.println("Hello");
 
         Module myModule = SimpleOpenPackagesDemo9.class.getModule();
@@ -99,4 +104,60 @@ public class SimpleOpenPackagesDemo9 {
         return ClassLoader.getSystemClassLoader().getResourceAsStream(name).readAllBytes();
     }
 
+    static class MyClassLoader extends ClassLoader {
+    	public MyClassLoader(ClassLoader parent) {
+    		super(parent);
+		}
+    	
+        public Object safeGetClassLoadingLock(String name) {
+            if (null == GET_CLASS_LOADING_LOCK) {
+                return this;
+            }
+            try {
+                return GET_CLASS_LOADING_LOCK.invoke(this, name);
+            } catch (IllegalAccessException ex) {
+                // Should not happen
+                throw new RuntimeException(ex);
+            } catch (IllegalArgumentException ex) {
+                // Should not happen
+                throw ex;
+            } catch (InvocationTargetException ex) {
+                // Should not happen
+                throw new RuntimeException(ex);
+            }
+        }
+    	
+        private static Method getClassLoaderMethodOrNull(String name, Class<?>... args) {
+            try {
+                Method m = ClassLoader.class.getDeclaredMethod(name, args);
+                try { m.setAccessible(true); } catch (Exception ex) {}
+                return m;
+            } catch (NoSuchMethodException ex) {
+                // OK, JDK version is less then 1.7
+                return null;
+            } catch (SecurityException ex) {
+                // Should be available, if method exists
+                throw ex;
+            }
+        }
+        
+        private static final Method GET_CLASS_LOADING_LOCK = 
+            getClassLoaderMethodOrNull("getClassLoadingLock", String.class);
+        
+        static { 
+            Method registerAsParallelCapable = getClassLoaderMethodOrNull("registerAsParallelCapable");
+            if (null != registerAsParallelCapable) {
+                try {
+                	registerAsParallelCapable.invoke(null);
+                } catch (IllegalAccessException ex) {
+                    throw new RuntimeException(ex);
+                } catch (IllegalArgumentException ex) {
+                    throw ex;
+                } catch (InvocationTargetException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+
+    }
 }
