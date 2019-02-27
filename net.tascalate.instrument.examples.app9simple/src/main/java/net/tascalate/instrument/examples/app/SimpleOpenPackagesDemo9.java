@@ -36,8 +36,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 
-import net.tascalate.instrument.spi.ClassDefiner;
-import net.tascalate.instrument.spi.ClassDefiners;
+import net.tascalate.instrument.emitter.ClassEmitter;
+import net.tascalate.instrument.emitter.ClassEmitterException;
+import net.tascalate.instrument.emitter.ClassEmitters;
 
 public class SimpleOpenPackagesDemo9 {
 
@@ -53,7 +54,7 @@ public class SimpleOpenPackagesDemo9 {
         demoModule("net.tascalate.instrument.examples.app.dynamic.Demo");
     }
 
-    static void demoModule(String dynamicClassName) throws ReflectiveOperationException, IOException {
+    static void demoModule(String dynamicClassName) throws Exception {
         
         System.out.println(">>>>>>>>");
         Module otherModule = SimpleOpenPackagesDemo9.class.getModule();
@@ -76,9 +77,9 @@ public class SimpleOpenPackagesDemo9 {
     private static Class<?> defineClassDynamically(Module module, 
                                                    String className, 
                                                    byte[] classBytes,
-                                                   ProtectionDomain pd) throws ReflectiveOperationException {
+                                                   ProtectionDomain pd) throws ClassEmitterException {
 
-        ClassDefiners.Lookup definers = ClassDefiners.of(module, module.getClassLoader());
+        ClassEmitters.Factory factory = ClassEmitters.of(module, module.getClassLoader());
         /*
          * Effectively, the call above is just the same as ClassDefiners.of(module); Two
          * args form is used to show that same pattern will be used with Java 6-8 and Java
@@ -86,11 +87,11 @@ public class SimpleOpenPackagesDemo9 {
          * ClassDefiners.of(null, classLoaderArg);
          */
 
-        System.out.println("Get Definers: " + definers);
+        System.out.println("Get factory: " + factory);
 
         String packageName = className.substring(0, className.lastIndexOf('.'));
 
-        ClassDefiner definer = definers.lookup(packageName);
+        ClassEmitter definer = factory.create(packageName);
         if (null == definer) {
             throw new IllegalArgumentException("No class definer exists for package " + packageName);
         }

@@ -38,7 +38,7 @@ import net.tascalate.instrument.examples.moduleB.internalY.PackageExtenderY;
 @AllowDynamicClasses({ PackageExtenderX.class, PackageExtenderY.class }) 
 module net.tascalate.instrument.examples.moduleB {
     // we can avoid transitive here -- there is no explicit type use in exported API
-    requires net.tascalate.instrument.spi;
+    requires net.tascalate.instrument.emitter;
 
     // Theses 2 exports are necessary for demo app -- to instantiate generated class
     // Not necessary for Java Agent that only define classes
@@ -49,14 +49,15 @@ module net.tascalate.instrument.examples.moduleB {
     // This is smth. that would be great to avoid, but, unfortunately, is
     // unavoidable
     // Increases the total verbosity a lot!
-    opens net.tascalate.instrument.examples.moduleB.internalX to net.tascalate.instrument.spi;
-    opens net.tascalate.instrument.examples.moduleB.internalY to net.tascalate.instrument.spi;
+    opens net.tascalate.instrument.examples.moduleB.internalX to net.tascalate.instrument.emitter;
+    opens net.tascalate.instrument.examples.moduleB.internalY to net.tascalate.instrument.emitter;
 
     // In-place rant. Why it's not possible to do the following:
     /*
      * opens net.tascalate.instrument.examples.moduleB.internalX,
-     * net.tascalate.instrument.examples.moduleB.internalY to
-     * net.tascalate.instrument.spi;
+     *       net.tascalate.instrument.examples.moduleB.internalY 
+     * to
+     *     net.tascalate.instrument.emitter;
      */
     // It's dead simple! Minor change in grammar!
     // But readability would be improved A LOT!

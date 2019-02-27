@@ -29,19 +29,17 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import net.tascalate.instrument.api.AllowDynamicClasses;
-import net.tascalate.instrument.examples.app.dynamic.OpenPackage;
+package net.tascalate.instrument.emitter;
+
+import java.security.ProtectionDomain;
 
 /**
+ * <p>The contract to define classes dynamically.
  * 
- */
-/**
  * @author vsilaev
- *
+ * @see ClassEmitters
  */
-@AllowDynamicClasses(OpenPackage.class)
-module net.tascalate.instrument.examples.app {
-requires net.tascalate.instrument.emitter;
-
-    opens net.tascalate.instrument.examples.app.dynamic to net.tascalate.instrument.emitter;
+/*@FunctionalInterface*/
+public interface ClassEmitter {
+    Class<?> defineClass(byte[] classBytes, ProtectionDomain protectionDomain) throws ClassEmitterException;
 }

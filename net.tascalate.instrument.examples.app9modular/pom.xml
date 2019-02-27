@@ -19,7 +19,7 @@
 		<!-- Compile-only dependency on *.spi9 *, scope PROVIDED -->
 		<dependency>
 			<groupId>net.tascalate.instrument</groupId>
-			<artifactId>net.tascalate.instrument.spi9</artifactId>
+			<artifactId>net.tascalate.instrument.emitter9</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>

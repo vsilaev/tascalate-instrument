@@ -36,8 +36,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.ProtectionDomain;
 
-import net.tascalate.instrument.spi.ClassDefiner;
-import net.tascalate.instrument.spi.ClassDefiners;
+import net.tascalate.instrument.emitter.ClassEmitter;
+import net.tascalate.instrument.emitter.ClassEmitters;
 
 public class OpenPackagesDemo8 {
     
@@ -72,18 +72,18 @@ public class OpenPackagesDemo8 {
                                                    byte[] classBytes,
                                                    ProtectionDomain pd) throws ReflectiveOperationException {
 
-        ClassDefiners.Lookup definers = ClassDefiners.of(module, classLoader);
+        ClassEmitters.Factory factory = ClassEmitters.of(module, classLoader);
         /*
          * Effectively, the call above is just the same as ClassDefiners.of(classLoader); 
          * Two args form is used to show that same pattern will be used with Java 6-8 and 
          * Java 9-11+ from instrumentation agents.
          */
 
-        System.out.println("Get Definers: " + definers);
+        System.out.println("Get factory: " + factory);
 
         String packageName = className.substring(0, className.lastIndexOf('.'));
 
-        ClassDefiner definer = definers.lookup(packageName);
+        ClassEmitter definer = factory.create(packageName);
         if (null == definer) {
             throw new IllegalArgumentException("No class definer exists for package " + packageName);
         }

@@ -17,7 +17,7 @@
 		<!-- Compile-only dependency on *.spi9 *, scope PROVIDED -->
 		<dependency>
 			<groupId>net.tascalate.instrument</groupId>
-			<artifactId>net.tascalate.instrument.spi9</artifactId>
+			<artifactId>net.tascalate.instrument.emitter9</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
@@ -25,7 +25,7 @@
 		<!-- It's impossible to compile with multi-release JAR, hence 2 deps -->
 		<dependency>
 			<groupId>net.tascalate.instrument</groupId>
-			<artifactId>net.tascalate.instrument.spi</artifactId>
+			<artifactId>net.tascalate.instrument.emitter</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
