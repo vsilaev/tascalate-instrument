@@ -29,54 +29,25 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.tascalate.instrument.emitter;
+package net.tascalate.instrument.spi;
 
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
 import java.security.ProtectionDomain;
 
-import sun.misc.Unsafe;
-
-class UnsafeEmitters implements ClassEmitters.Factory {
-
-    private final WeakReference<ClassLoader> classLoaderRef;
-    private final ClassEmitter definer = new ClassEmitter() {
-        
-        @Override
-        public Class<?> defineClass(byte[] classBytes, ProtectionDomain protectionDomain) throws ClassEmitterException {
-            ClassLoader classLoader = classLoaderRef.get();
-            if (null == classLoader) {
-                throw new IllegalStateException("ClassLoader is unloaded");
-            }
-            String className = ReflectionHelper.getClassName(classBytes);
-            try {
-                UNSAFE.defineClass(className, classBytes, 0, classBytes.length, classLoader, protectionDomain);
-            } catch (Error | RuntimeException ex) {
-                throw ex;
-            } catch (Throwable ex) {
-                throw new ClassEmitterException(ex);
-            }
-        }
-    };
+abstract class ClassLoaderEmitterHelper implements ClassEmitter {
     
-    UnsafeEmitters(ClassLoader classLoader) {
-        classLoaderRef = new WeakReference<>(classLoader);
+    ClassLoaderEmitterHelper(ClassLoader classLoader) {
+        throw new UnsupportedOperationException();
     }
+    
+    abstract Class<?> defineClass(String className, 
+                                  byte[] classBytes, 
+                                  ClassLoader classLoader,
+                                  ProtectionDomain protectionDomain) throws Exception;
     
     @Override
-    public ClassEmitter create(String packageName) throws ClassEmitterException {
-        return definer;
+    public final Class<?> defineClass(byte[] classBytes, 
+                                      ProtectionDomain protectionDomain) throws ClassEmitterException {
+        
+        throw new UnsupportedOperationException();
     }
-    
-    private static final Unsafe UNSAFE;
-    static {
-        try {
-            Field f = Unsafe.class.getDeclaredField("theUnsafe"); //Internal reference
-            f.setAccessible(true);
-            UNSAFE = (Unsafe)f.get(null);
-        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-    
 }

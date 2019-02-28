@@ -36,8 +36,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.ProtectionDomain;
 
-import net.tascalate.instrument.emitter.ClassEmitter;
-import net.tascalate.instrument.emitter.ClassEmitters;
+import net.tascalate.instrument.spi.ClassEmitter;
+import net.tascalate.instrument.spi.ClassEmitterException;
+import net.tascalate.instrument.spi.ClassEmitters;
 
 public class OpenPackagesDemo8 {
     
@@ -49,7 +50,7 @@ public class OpenPackagesDemo8 {
         demoModule("net.tascalate.instrument.examples.app8.surprise.Demo");
     }
 
-    static void demoModule(String dynamicClassName) throws ReflectiveOperationException, IOException {
+    static void demoModule(String dynamicClassName) throws Exception {
         
         System.out.println(">>>>>>>>");
 
@@ -70,7 +71,7 @@ public class OpenPackagesDemo8 {
                                                    ClassLoader classLoader, 
                                                    String className, 
                                                    byte[] classBytes,
-                                                   ProtectionDomain pd) throws ReflectiveOperationException {
+                                                   ProtectionDomain pd) throws ClassEmitterException {
 
         ClassEmitters.Factory factory = ClassEmitters.of(module, classLoader);
         /*

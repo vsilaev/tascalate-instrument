@@ -13,23 +13,25 @@
 	<artifactId>net.tascalate.instrument.examples.moduleB</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Tascalate Instrument / Examples / Module B</name>
+	<name>Tascalate Instrument / Examples / Java-9 Module B</name>
 
 	<dependencies>
-		<!-- Compile-only dependency on *.spi9 *, scope PROVIDED -->
-		<dependency>
-			<groupId>net.tascalate.instrument</groupId>
-			<artifactId>net.tascalate.instrument.emitter9</artifactId>
-			<version>${project.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<!-- Runtime-only dependency on multi-release *.spi *, scope RUNTIME -->
-		<!-- It's impossible to compile with multi-release JAR, hence 2 deps -->
+		<!-- Runtime-only dependency on multi-release *.spi *, scope RUNTIME   -->
+		<!-- It's impossible to compile with multi-release JAR, hence 2 deps   -->
+		<!-- Also it should be first to be the first on module path in Eclipse -->
 		<dependency>
 			<groupId>net.tascalate.instrument</groupId>
 			<artifactId>net.tascalate.instrument.emitter</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
+		</dependency>
+		<!-- Compile-only dependency on *.spi9 *, scope PROVIDED -->
+		<dependency>
+			<groupId>net.tascalate.instrument</groupId>
+			<artifactId>net.tascalate.instrument.emitter9</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

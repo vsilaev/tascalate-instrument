@@ -41,6 +41,7 @@
 	<modules>
 		<module>net.tascalate.instrument.emitter8</module>
 		<module>net.tascalate.instrument.emitter9</module>
+		<module>net.tascalate.instrument.emitter11</module>
 		<module>net.tascalate.instrument.emitter</module>
 		<module>net.tascalate.instrument.examples.app8</module>
 		<module>net.tascalate.instrument.examples.app9simple</module>

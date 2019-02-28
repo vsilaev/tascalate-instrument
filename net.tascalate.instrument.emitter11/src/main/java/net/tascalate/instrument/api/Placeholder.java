@@ -29,17 +29,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.tascalate.instrument.emitter;
+package net.tascalate.instrument.api;
 
-import java.security.ProtectionDomain;
+class Placeholder {
 
-/**
- * <p>The contract to define classes dynamically.
- * 
- * @author vsilaev
- * @see ClassEmitters
- */
-@FunctionalInterface
-public interface ClassEmitter {
-    Class<?> defineClass(byte[] classBytes, ProtectionDomain protectionDomain) throws ClassEmitterException;
 }

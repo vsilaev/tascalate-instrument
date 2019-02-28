@@ -29,20 +29,13 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import net.tascalate.instrument.api.AllowDynamicClasses;
-import net.tascalate.instrument.examples.app.dynamic.OpenPackage;
-
-/**
- * 
- */
 /**
  * @author vsilaev
  *
  */
-// Alternative with --add-opens java.base/java.lang=net.tascalate.instrument.emitter;
-@AllowDynamicClasses(OpenPackage.class)
-module net.tascalate.instrument.examples.app {
-requires net.tascalate.instrument.emitter;
-
-    opens net.tascalate.instrument.examples.app.dynamic to net.tascalate.instrument.emitter;
-}
+module net.tascalate.instrument.emitter {
+    // For Java Agent / Bytecode Weaving Tools authors
+    exports net.tascalate.instrument.spi;
+    //For users of bytecode weaving tools
+    exports net.tascalate.instrument.api;
+} 

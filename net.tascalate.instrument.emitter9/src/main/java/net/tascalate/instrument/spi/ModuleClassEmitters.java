@@ -29,7 +29,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.tascalate.instrument.emitter;
+package net.tascalate.instrument.spi;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.ref.WeakReference;
@@ -41,8 +41,8 @@ import java.util.stream.Stream;
 
 import net.tascalate.instrument.api.AbstractOpenPackage;
 import net.tascalate.instrument.api.AllowDynamicClasses;
-import net.tascalate.instrument.emitter.ClassEmitter;
-import net.tascalate.instrument.emitter.ClassEmitters;
+import net.tascalate.instrument.spi.ClassEmitter;
+import net.tascalate.instrument.spi.ClassEmitters;
 
 class ModuleClassEmitters implements ClassEmitters.Factory {
 
@@ -51,7 +51,7 @@ class ModuleClassEmitters implements ClassEmitters.Factory {
     private final MethodHandles.Lookup selfLookup = MethodHandles.lookup();
     private final Map<String, ClassEmitter> cachedDefiners = new HashMap<>();
 
-    ModuleClassEmitters(Module targetModule, Class<? extends AbstractOpenPackage>[] packageClasses) {
+    ModuleClassEmitters(Module targetModule, Class<?>[] packageClasses) {
         this.targetModule = new WeakReference<>(targetModule);
         // TODO: is keeping hard references is ok / mandatory?
         this.packageClasses = Stream.of(packageClasses)

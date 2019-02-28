@@ -29,23 +29,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.tascalate.instrument.emitter;
+package net.tascalate.instrument.spi;
 
-public class ClassEmitterException extends Exception {
-
-    private static final long serialVersionUID = 1L;
+class UnsafeSupport {
+    private UnsafeSupport() {}
     
-    public ClassEmitterException(String message) {
-        super(message);
+    static boolean isSupported() {
+        return true;
     }
-    
-    public ClassEmitterException(Throwable cause) {
-        super(cause);
-    }
-    
-    public ClassEmitterException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    
 }

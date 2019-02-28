@@ -29,15 +29,17 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.tascalate.instrument.emitter;
+package net.tascalate.instrument.spi;
 
-final class EmptyClassEmitters implements ClassEmitters.Factory {
-    private EmptyClassEmitters() {}
+import java.security.ProtectionDomain;
 
-    @Override
-    public ClassEmitter create(String packageName) {
-        return null;
-    }
-
-    static final ClassEmitters.Factory INSTANCE = new EmptyClassEmitters();
+/**
+ * <p>The contract to define classes dynamically.
+ * 
+ * @author vsilaev
+ * @see ClassEmitters
+ */
+@FunctionalInterface
+public interface ClassEmitter {
+    Class<?> defineClass(byte[] classBytes, ProtectionDomain protectionDomain) throws ClassEmitterException;
 }

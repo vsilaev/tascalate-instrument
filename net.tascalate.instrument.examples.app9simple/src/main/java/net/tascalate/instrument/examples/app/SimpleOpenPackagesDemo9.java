@@ -32,20 +32,16 @@
 package net.tascalate.instrument.examples.app;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+
 import java.security.ProtectionDomain;
 
-import net.tascalate.instrument.emitter.ClassEmitter;
-import net.tascalate.instrument.emitter.ClassEmitterException;
-import net.tascalate.instrument.emitter.ClassEmitters;
+import net.tascalate.instrument.spi.ClassEmitter;
+import net.tascalate.instrument.spi.ClassEmitterException;
+import net.tascalate.instrument.spi.ClassEmitters;
 
 public class SimpleOpenPackagesDemo9 {
 
     public static void main(String[] args) throws Throwable {
-    	MyClassLoader myCL = new MyClassLoader(ClassLoader.getSystemClassLoader());
-    	System.out.println(myCL + " ? " + myCL.isRegisteredAsParallelCapable());
-    	System.out.println(myCL.safeGetClassLoadingLock("a.x.y.ZClass"));
         System.out.println("Hello");
 
         Module myModule = SimpleOpenPackagesDemo9.class.getModule();
@@ -79,6 +75,15 @@ public class SimpleOpenPackagesDemo9 {
                                                    byte[] classBytes,
                                                    ProtectionDomain pd) throws ClassEmitterException {
 
+        //This will work if you run Java 9-11 
+        // without AllowDynamicClasses on module-info 
+        //ClassEmitters.Factory factory = ClassEmitters.of(OpenPackage.class, module.getClassLoader());
+        
+        //This will work if you run in Java 9-10 (not later - sun.misc.Unsafe is used) 
+        // without AllowDynamicClasses on module-info
+        //ClassEmitters.Factory factory = ClassEmitters.of(SayHello.class, module.getClassLoader());
+        
+        //This will run on Java 9-11 with AllowDynamicClasses on module-info
         ClassEmitters.Factory factory = ClassEmitters.of(module, module.getClassLoader());
         /*
          * Effectively, the call above is just the same as ClassDefiners.of(module); Two
@@ -103,62 +108,5 @@ public class SimpleOpenPackagesDemo9 {
 
     private static byte[] readResource(String name) throws IOException {
         return ClassLoader.getSystemClassLoader().getResourceAsStream(name).readAllBytes();
-    }
-
-    static class MyClassLoader extends ClassLoader {
-    	public MyClassLoader(ClassLoader parent) {
-    		super(parent);
-		}
-    	
-        public Object safeGetClassLoadingLock(String name) {
-            if (null == GET_CLASS_LOADING_LOCK) {
-                return this;
-            }
-            try {
-                return GET_CLASS_LOADING_LOCK.invoke(this, name);
-            } catch (IllegalAccessException ex) {
-                // Should not happen
-                throw new RuntimeException(ex);
-            } catch (IllegalArgumentException ex) {
-                // Should not happen
-                throw ex;
-            } catch (InvocationTargetException ex) {
-                // Should not happen
-                throw new RuntimeException(ex);
-            }
-        }
-    	
-        private static Method getClassLoaderMethodOrNull(String name, Class<?>... args) {
-            try {
-                Method m = ClassLoader.class.getDeclaredMethod(name, args);
-                try { m.setAccessible(true); } catch (Exception ex) {}
-                return m;
-            } catch (NoSuchMethodException ex) {
-                // OK, JDK version is less then 1.7
-                return null;
-            } catch (SecurityException ex) {
-                // Should be available, if method exists
-                throw ex;
-            }
-        }
-        
-        private static final Method GET_CLASS_LOADING_LOCK = 
-            getClassLoaderMethodOrNull("getClassLoadingLock", String.class);
-        
-        static { 
-            Method registerAsParallelCapable = getClassLoaderMethodOrNull("registerAsParallelCapable");
-            if (null != registerAsParallelCapable) {
-                try {
-                	registerAsParallelCapable.invoke(null);
-                } catch (IllegalAccessException ex) {
-                    throw new RuntimeException(ex);
-                } catch (IllegalArgumentException ex) {
-                    throw ex;
-                } catch (InvocationTargetException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        }
-
     }
 }

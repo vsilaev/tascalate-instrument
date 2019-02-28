@@ -36,10 +36,9 @@ import java.security.ProtectionDomain;
 
 import net.tascalate.instrument.examples.moduleA.SampleClassA;
 import net.tascalate.instrument.examples.moduleB.SampleClassB;
-
-import net.tascalate.instrument.emitter.ClassEmitter;
-import net.tascalate.instrument.emitter.ClassEmitterException;
-import net.tascalate.instrument.emitter.ClassEmitters;
+import net.tascalate.instrument.spi.ClassEmitter;
+import net.tascalate.instrument.spi.ClassEmitterException;
+import net.tascalate.instrument.spi.ClassEmitters;
 
 public class ModularPackagesDemo9 {
 

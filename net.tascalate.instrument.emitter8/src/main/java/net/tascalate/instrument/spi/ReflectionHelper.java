@@ -29,7 +29,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.tascalate.instrument.emitter;
+package net.tascalate.instrument.spi;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -78,6 +78,11 @@ class ReflectionHelper {
         }
         dis.readShort(); // skip access flags
         return strings[classes[(dis.readShort() & 0xFFFF) -1 ] - 1].replace('/', '.');
+    }
+    
+    static String packageNameOf(String className) {
+        int lastDot = className.lastIndexOf('.');
+        return lastDot > 0 ? className.substring(0, lastDot) : null;
     }
     
     static ClassLoader getBestClassLoader(ClassLoader a, ClassLoader b) {

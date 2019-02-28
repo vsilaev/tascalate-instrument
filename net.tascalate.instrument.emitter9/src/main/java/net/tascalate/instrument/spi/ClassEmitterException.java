@@ -1,4 +1,4 @@
-package net.tascalate.instrument.emitter;
+package net.tascalate.instrument.spi;
 
 public class ClassEmitterException extends Exception {
 

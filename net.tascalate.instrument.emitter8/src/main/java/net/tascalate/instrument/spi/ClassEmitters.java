@@ -29,12 +29,12 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.tascalate.instrument.emitter;
+package net.tascalate.instrument.spi;
 
 import java.util.Objects;
 
-import net.tascalate.instrument.emitter.ClassEmitter;
-import net.tascalate.instrument.emitter.ClassEmitters;
+import net.tascalate.instrument.spi.ClassEmitter;
+import net.tascalate.instrument.spi.ClassEmitters;
 
 public final class ClassEmitters {
     

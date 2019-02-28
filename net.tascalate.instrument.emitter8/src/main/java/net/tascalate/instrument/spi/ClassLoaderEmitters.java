@@ -29,67 +29,65 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.tascalate.instrument.emitter;
+package net.tascalate.instrument.spi;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+
 import java.net.URL;
+
 import java.security.ProtectionDomain;
 
-import net.tascalate.instrument.emitter.ClassEmitter;
-import net.tascalate.instrument.emitter.ClassEmitters;
+import net.tascalate.instrument.spi.ClassEmitter;
+import net.tascalate.instrument.spi.ClassEmitters;
 
 class ClassLoaderEmitters implements ClassEmitters.Factory {
 
-    private final WeakReference<ClassLoader> classLoaderRef;
-    
-    private final ClassEmitter emitter = new ClassEmitter() {
-        @Override
-        public Class<?> defineClass(byte[] classBytes, ProtectionDomain protectionDomain) throws ClassEmitterException {
-            ClassLoader classLoader = classLoaderRef.get();
-            if (null == classLoader) {
-                throw new IllegalStateException("ClassLoader is unloaded");
-            }
-            try {
-                String className = ReflectionHelper.getClassName(classBytes);
-                Object lock = null == GET_CLASS_LOADING_LOCK ? classLoader : GET_CLASS_LOADING_LOCK.invoke(classLoader, className);
-                Class<?> clazz;
-                synchronized (lock) {
-                    clazz = (Class<?>)FIND_LOADED_CLASS.invoke(classLoader, className);
-                    if (null == clazz) {
-                        int lastDot = className.lastIndexOf('.');
-                        String packageName = lastDot > 0 ? className.substring(0, lastDot) : null;
-                        if (null != packageName) {
-                            Object p = GET_PACKAGE.invoke(classLoader, packageName);
-                            if (null == p) {
-                                DEFINE_PACKAGE.invoke(classLoader, packageName,
-                                                      null, null, null, null, null, null, 
-                                                      null);
-                            }
-                        }
-                        clazz = (Class<?>) DEFINE_CLASS.invoke(classLoader, (String) null, classBytes, 0, classBytes.length, protectionDomain);
-                    } else {
-                        // throw ex???
-                    }
-                }
-                return clazz;
-            } catch (Error ex) {
-                throw ex;
-            } catch (RuntimeException ex) {
-                throw ex;
-            } catch (Throwable ex) {
-                throw new ClassEmitterException(ex);
-            }
-        }
-    };
+    private final ClassLoaderEmitterHelper emitter;
 
     ClassLoaderEmitters(ClassLoader classLoader) {
-        this.classLoaderRef = new WeakReference<ClassLoader>(classLoader);
+        emitter = new ClassLoaderEmitterHelper(classLoader) {
+            @Override
+            Class<?> defineClass(String className, 
+                                 byte[] classBytes, 
+                                 ClassLoader classLoader,
+                                 ProtectionDomain protectionDomain) throws Exception {
+                return ClassLoaderEmitters.defineClass(className, classBytes, classLoader, protectionDomain);
+            }
+        };
     }
 
     @Override
     public ClassEmitter create(String packageName) {
         return emitter;
+    }
+    
+    static Class<?> defineClass(String className, 
+                                byte[] classBytes, 
+                                ClassLoader classLoader, 
+                                ProtectionDomain protectionDomain) throws Exception {
+        
+        Object lock = null == GET_CLASS_LOADING_LOCK ? classLoader : GET_CLASS_LOADING_LOCK.invoke(classLoader, className);
+        Class<?> clazz;
+        synchronized (lock) {
+            clazz = (Class<?>)FIND_LOADED_CLASS.invoke(classLoader, className);
+            if (null == clazz) {
+                String packageName = ReflectionHelper.packageNameOf(className);
+                if (null != packageName) {
+                    Package p = (Package)GET_PACKAGE.invoke(classLoader, packageName);
+                    if (null == p) {
+                        p = (Package)DEFINE_PACKAGE.invoke(classLoader, packageName,
+                                                           null, null, null, null, null, null, 
+                                                           null);
+                    }
+                }
+                clazz = (Class<?>) DEFINE_CLASS.invoke(
+                    classLoader, className, classBytes, 0, classBytes.length, protectionDomain
+                );
+            } else {
+                // throw ex???
+            }
+        }
+        return clazz;
     }
     
     private static Method getMethod(boolean optional, Class<?> clazz, String methodName, Class<?>... args) {

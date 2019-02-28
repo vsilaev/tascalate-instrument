@@ -43,8 +43,25 @@
 					<exclude>META-INF/**</exclude>
 					<exclude>**/ClassEmitter.class</exclude>
 					<exclude>**/ClassEmitterException.class</exclude>
+					<exclude>**/ClassLoaderEmitterHelper.class</exclude>
 					<exclude>**/EmptyClassEmitters.class</exclude>				
 					<exclude>**/ReflectionHelper.class</exclude>
+				</excludes>
+			</unpackOptions>
+			<scope>runtime</scope>
+			<useTransitiveDependencies>false</useTransitiveDependencies>
+		</dependencySet>
+		<dependencySet>
+			<includes>
+				<include>*:net.tascalate.instrument.emitter11</include>
+			</includes>
+			<outputDirectory>/META-INF/versions/11</outputDirectory>
+			<useProjectArtifact>true</useProjectArtifact>
+			<unpack>true</unpack>
+			<unpackOptions>
+				<excludes>
+					<exclude>META-INF/**</exclude>
+					<exclude>**/Placeholder.class</exclude>
 				</excludes>
 			</unpackOptions>
 			<scope>runtime</scope>

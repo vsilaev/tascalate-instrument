@@ -31,7 +31,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 import net.tascalate.instrument.api.AllowDynamicClasses;
-
 import net.tascalate.instrument.examples.moduleB.internalX.PackageExtenderX;
 import net.tascalate.instrument.examples.moduleB.internalY.PackageExtenderY;
 
