@@ -31,8 +31,6 @@
  */
 package net.tascalate.instrument.spi;
 
-import java.util.Objects;
-
 import net.tascalate.instrument.spi.ClassEmitter;
 import net.tascalate.instrument.spi.ClassEmitters;
 
@@ -43,18 +41,21 @@ public final class ClassEmitters {
     public static interface Factory {
         /**
          * Lookup for a {@link ClassEmitter} for the given package.
+         * <p>If the provided package is not supported for class injection then null is returned 
          * 
          * @param packageName the name of the package (com.company.subpackage) where
          *                    classes will be defined
          * @return the {@link ClassEmitter} used to dynamically create classes inside 
-         *         the given package, or empty if the package is not "open"
-         * @throws ReflectiveOperationException
+         *         the given package, or <code>null</code> if the package is not "open"
+         * @throws ClassEmitterException when some internal error happens, typically a wrapper for reflection exceptions
          */
         abstract ClassEmitter create(String packageName) throws ClassEmitterException;
     }
 
     public static Factory of(ClassLoader classLoader) {
-        Objects.requireNonNull(classLoader);
+        if (null == classLoader) {
+            throw new NullPointerException();
+        }
         if (classLoader instanceof Factory) {
             return (Factory)classLoader;
         }
@@ -64,7 +65,7 @@ public final class ClassEmitters {
     public static Factory of(Object moduleOrClass, ClassLoader classLoader) {
         ClassLoader altClassLoader = null;
         if (null != moduleOrClass) {
-            if (moduleOrClass.getClass() == Class.class) {
+            if (Class.class == moduleOrClass.getClass()) {
                 // Ok, it's class
                 Class<?> clazz = (Class<?>)moduleOrClass;
                 altClassLoader = clazz.getClassLoader();

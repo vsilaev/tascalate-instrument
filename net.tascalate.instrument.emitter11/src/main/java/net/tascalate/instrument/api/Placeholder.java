@@ -31,6 +31,6 @@
  */
 package net.tascalate.instrument.api;
 
-class Placeholder {
+public class Placeholder {
 
 }

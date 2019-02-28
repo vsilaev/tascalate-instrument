@@ -47,12 +47,13 @@ public final class ClassEmitters {
     
         /**
          * Lookup for a {@link ClassEmitter} for the given package.
+         * <p>If the provided package is not supported for class injection then null is returned 
          * 
          * @param packageName the name of the package (com.company.subpackage) where
          *                    classes will be defined
          * @return the {@link ClassEmitter} used to dynamically create classes inside 
-         *         the given package, or empty if the package is not "open"
-         * @throws ReflectiveOperationException
+         *         the given package, or <code>null</code> if the package is not "open"
+         * @throws ClassEmitterException when some internal error happens, typically a wrapper for reflection exceptions
          */
         abstract ClassEmitter create(String packageName) throws ClassEmitterException;
     }
