@@ -76,5 +76,40 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+							<phase>package</phase>
+							<configuration>
+								<doctitle>${project.name}, v. ${project.version}</doctitle>
+								<includeDependencySources>true</includeDependencySources>
+								<dependencySourceExcludes>
+									<dependencySourceExclude>:net.tascalate.instrument.emitter</dependencySourceExclude>
+									<dependencySourceExclude>:net.tascalate.instrument.emitter8</dependencySourceExclude>
+									<dependencySourceExclude>:net.tascalate.instrument.emitter11</dependencySourceExclude>
+								</dependencySourceExcludes>
+								<dependencySourceIncludes>
+									<dependencySourceExclude>:net.tascalate.instrument.emitter9</dependencySourceExclude>
+								</dependencySourceIncludes>
+							</configuration>
+						</execution>
+					</executions>
+					<configuration>
+						<aggregate>true</aggregate>
+						<doclint>none</doclint>
+						<detectJavaApiLink>true</detectJavaApiLink>
+						<release>9</release> 
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 </project>
