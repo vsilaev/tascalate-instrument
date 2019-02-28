@@ -42,9 +42,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<release>9</release>
-				</configuration>
+				<executions>
+					<execution>
+						<id>default-compile</id>
+						<phase>none</phase>
+					</execution> 
+				</executions>
 			</plugin>
 
 			<plugin>
@@ -75,41 +78,68 @@
 					</descriptors>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<id>unpack-sources-8</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeGroupIds>${project.groupId}</includeGroupIds>
+							<includeArtifactIds>net.tascalate.instrument.emitter8</includeArtifactIds>
+							<classifier>sources</classifier>
+							<type>jar</type>
+							<outputDirectory>${project.build.outputDirectory}/../gen_sources</outputDirectory>
+							<includes>**/*.java</includes>
+							<failOnMissingClassifierArtifact>true</failOnMissingClassifierArtifact>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-sources-9</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeGroupIds>${project.groupId}</includeGroupIds>
+							<includeArtifactIds>net.tascalate.instrument.emitter9</includeArtifactIds>
+							<classifier>sources</classifier>
+							<type>jar</type>
+							<outputDirectory>${project.build.directory}/gen_sources</outputDirectory>
+							<includes>**/*.java</includes>
+							<excludes>
+								**/ClassEmitter.java, 
+								**/ClassEmitterException.java,
+								**/ClassLoaderEmitterHelper.java, 
+								**/ReflectionHelper.java,
+								**/EmptyClassEmitters.java</excludes>
+							<failOnMissingClassifierArtifact>true</failOnMissingClassifierArtifact>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<executions>
-						<execution>
-							<id>attach-javadocs</id>
-							<goals>
-								<goal>jar</goal>
-							</goals>
-							<phase>package</phase>
-							<configuration>
-								<doctitle>${project.name}, v. ${project.version}</doctitle>
-								<includeDependencySources>true</includeDependencySources>
-								<dependencySourceExcludes>
-									<dependencySourceExclude>:net.tascalate.instrument.emitter</dependencySourceExclude>
-									<dependencySourceExclude>:net.tascalate.instrument.emitter8</dependencySourceExclude>
-									<dependencySourceExclude>:net.tascalate.instrument.emitter11</dependencySourceExclude>
-								</dependencySourceExcludes>
-								<dependencySourceIncludes>
-									<dependencySourceExclude>:net.tascalate.instrument.emitter9</dependencySourceExclude>
-								</dependencySourceIncludes>
-							</configuration>
-						</execution>
-					</executions>
 					<configuration>
-						<aggregate>true</aggregate>
-						<doclint>none</doclint>
-						<detectJavaApiLink>true</detectJavaApiLink>
-						<release>9</release> 
+						<sourcepath>${project.build.directory}/gen_sources</sourcepath>
+						<release>9</release>
 					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
+		<resources>
+			<resource>
+				<directory>${project.build.directory}/gen_sources</directory>
+			</resource>
+		</resources>
 	</build>
 </project>

@@ -130,7 +130,7 @@
 									<goal>jar</goal>
 								</goals>
 								<configuration>
-									<includeDependencySources>false</includeDependencySources>
+									<release>9</release>
 								</configuration>
 							</execution>
 						</executions>
