@@ -55,12 +55,13 @@ public class OpenPackagesDemo8 {
         System.out.println(">>>>>>>>");
 
         @SuppressWarnings("unchecked")
-        Class<? extends Runnable> cls = (Class<? extends Runnable>) 
-        defineClassDynamically(null, // No module, ya!
-                               ClassLoader.getSystemClassLoader(), 
-                               dynamicClassName,
-                               readResource(dynamicClassName.substring(dynamicClassName.lastIndexOf('.') + 1) + ".bytes"),
-                               OpenPackagesDemo8.class.getProtectionDomain());
+        Class<? extends Runnable> cls = (Class<? extends Runnable>)defineClassDynamically(
+           null, // No module, ya!
+           ClassLoader.getSystemClassLoader(), 
+           dynamicClassName,
+           readResource(dynamicClassName.substring(dynamicClassName.lastIndexOf('.') + 1) + ".bytes"),
+           OpenPackagesDemo8.class.getProtectionDomain()
+       );
 
         Runnable obj = cls.newInstance();
         obj.run();
