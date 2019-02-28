@@ -90,6 +90,11 @@ class ClassLoaderEmitters implements ClassEmitters.Factory {
         return clazz;
     }
     
+    @Override
+    public String toString() {
+        return getClass().getName() + "[method=reflection, supported-packages=<any>, " + emitter.describe() + "]"; 
+    }
+    
     private static Method getMethod(boolean optional, Class<?> clazz, String methodName, Class<?>... args) {
         try {
             Method method = clazz.getDeclaredMethod(methodName, args);

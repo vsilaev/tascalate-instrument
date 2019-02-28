@@ -32,10 +32,12 @@
 package net.tascalate.instrument.spi;
 
 import java.lang.invoke.MethodHandles;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -70,6 +72,20 @@ class ModuleClassEmitters implements ClassEmitters.Factory {
             cachedDefiners.put(packageName, definer);
         }
         return definer == NO_DEFINER ? null : definer;
+    }
+    
+    @Override
+    public String toString() {
+        String packages =
+        packageClasses.stream()
+                      .map(Reference::get)
+                      .filter(Objects::nonNull)
+                      .map(Class::getPackageName)
+                      .collect(Collectors.joining(", "));
+        Module target = targetModule.get();
+        String moduleName = null == target ? "<evicted>" : target.getName();
+        return getClass().getName() + "[method=lookup, supported-packages=" + packages + 
+                                      ", module="  + moduleName + "]"; 
     }
 
     private ClassEmitter lookupInternal(String packageName) throws ClassEmitterException {

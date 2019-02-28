@@ -50,4 +50,8 @@ abstract class ClassLoaderEmitterHelper implements ClassEmitter {
         
         throw new UnsupportedOperationException();
     }
+    
+    String describe() {
+        throw new UnsupportedOperationException();
+    }
 }

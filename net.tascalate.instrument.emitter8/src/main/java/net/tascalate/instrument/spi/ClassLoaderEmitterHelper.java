@@ -88,6 +88,11 @@ abstract class ClassLoaderEmitterHelper implements ClassEmitter {
         }
     }
     
+    String describe() {
+        ClassLoader classLoader = classLoaderRef.get();
+        return "class-loader=" + (null == classLoader ? "<evicted>" : classLoader.toString());
+    }
+    
     private static ClassEmitterException wrap(Throwable ex) {
         if (ex instanceof ClassEmitterException) {
             return (ClassEmitterException)ex;

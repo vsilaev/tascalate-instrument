@@ -95,6 +95,11 @@ class UnsafeEmitters implements ClassEmitters.Factory {
                                 ProtectionDomain protectionDomain) {
         return UNSAFE.defineClass(className, classBytes, 0, classBytes.length, classLoader, protectionDomain);
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getName() + "[method=unsafe, supported-packages=<any>, " + emitter.describe() + "]"; 
+    }
 
     private static final Unsafe UNSAFE;
     static {

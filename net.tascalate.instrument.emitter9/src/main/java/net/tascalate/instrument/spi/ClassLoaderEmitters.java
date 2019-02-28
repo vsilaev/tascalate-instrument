@@ -98,6 +98,11 @@ class ClassLoaderEmitters implements ClassEmitters.Factory {
         }
     }
     
+    @Override
+    public String toString() {
+        return getClass().getName() + "[method=reflection, supported-packages=<any>, " + emitter.describe() + "]"; 
+    }
+    
     private static final MethodHandle FIND_LOADED_CLASS;
     private static final MethodHandle DEFINE_CLASS;
     private static final MethodHandle GET_CLASS_LOADING_LOCK; 
