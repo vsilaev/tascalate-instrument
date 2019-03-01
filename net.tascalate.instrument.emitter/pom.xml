@@ -94,7 +94,7 @@
 							<includeArtifactIds>net.tascalate.instrument.emitter8</includeArtifactIds>
 							<classifier>sources</classifier>
 							<type>jar</type>
-							<outputDirectory>${project.build.outputDirectory}/../gen_sources</outputDirectory>
+							<outputDirectory>${project.build.directory}/gen_sources</outputDirectory>
 							<includes>**/*.java</includes>
 							<failOnMissingClassifierArtifact>true</failOnMissingClassifierArtifact>
 						</configuration>
