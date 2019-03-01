@@ -15,6 +15,11 @@
 			<useTransitiveDependencies>false</useTransitiveDependencies>
 			<useProjectArtifact>true</useProjectArtifact>
 			<unpack>true</unpack>
+			<unpackOptions>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</unpackOptions>
 			<scope>compile</scope>
 		</dependencySet>
 		<dependencySet>

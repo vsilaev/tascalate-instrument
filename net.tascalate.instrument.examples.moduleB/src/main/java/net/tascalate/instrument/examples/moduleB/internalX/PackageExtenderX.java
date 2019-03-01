@@ -31,7 +31,7 @@
  */
 package net.tascalate.instrument.examples.moduleB.internalX;
 
-import net.tascalate.instrument.api.AbstractOpenPackage;
+import net.tascalate.instrument.emitter.api.AbstractOpenPackage;
 
 public final class PackageExtenderX extends AbstractOpenPackage {
     // May be private

@@ -29,7 +29,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import net.tascalate.instrument.api.AllowDynamicClasses;
+import net.tascalate.instrument.emitter.api.AllowDynamicClasses;
 import net.tascalate.instrument.examples.moduleA.internalX.OpenPackageX;
 import net.tascalate.instrument.examples.moduleA.internalY.OpenPackageY;
 /**
@@ -53,6 +53,8 @@ module net.tascalate.instrument.examples.moduleA {
     // Mandatory -- need to open for instrumentation (obviously, without export)
     // This is smth. that would be great to avoid, but, unfortunately, is unavoidable
     // Increases the total verbosity a lot!
-    opens net.tascalate.instrument.examples.moduleA.internalX to net.tascalate.instrument.emitter;
-    opens net.tascalate.instrument.examples.moduleA.internalY to net.tascalate.instrument.emitter;
+    opens net.tascalate.instrument.examples.moduleA.internalX 
+       to net.tascalate.instrument.emitter;
+    opens net.tascalate.instrument.examples.moduleA.internalY 
+       to net.tascalate.instrument.emitter;
 }

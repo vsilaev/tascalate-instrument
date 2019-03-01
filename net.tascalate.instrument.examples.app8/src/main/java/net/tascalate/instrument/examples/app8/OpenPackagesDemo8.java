@@ -36,9 +36,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.ProtectionDomain;
 
-import net.tascalate.instrument.spi.ClassEmitter;
-import net.tascalate.instrument.spi.ClassEmitterException;
-import net.tascalate.instrument.spi.ClassEmitters;
+import net.tascalate.instrument.emitter.spi.ClassEmitter;
+import net.tascalate.instrument.emitter.spi.ClassEmitterException;
+import net.tascalate.instrument.emitter.spi.ClassEmitters;
 
 public class OpenPackagesDemo8 {
     

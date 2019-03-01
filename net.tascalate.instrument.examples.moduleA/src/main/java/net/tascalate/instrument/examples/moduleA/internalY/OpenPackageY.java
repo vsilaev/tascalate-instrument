@@ -31,6 +31,6 @@
  */
 package net.tascalate.instrument.examples.moduleA.internalY;
 
-import net.tascalate.instrument.api.AbstractOpenPackage;
+import net.tascalate.instrument.emitter.api.AbstractOpenPackage;
 
 public final class OpenPackageY extends AbstractOpenPackage {}

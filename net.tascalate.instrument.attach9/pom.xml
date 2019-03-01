@@ -1,0 +1,30 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>net.tascalate.instrument</groupId>
+		<artifactId>net.tascalate.instrument.parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../</relativePath>
+	</parent>
+
+	<artifactId>net.tascalate.instrument.attach9</artifactId>
+	<packaging>jar</packaging>
+
+	<name>Tascalate Instrument / Attach / Java-9</name>
+
+	<dependencies>
+		<dependency>
+			 <groupId>net.java.dev.jna</groupId>
+			<artifactId>jna</artifactId>
+			<version>${jna.version}</version>
+			<scope>provided</scope>			
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>

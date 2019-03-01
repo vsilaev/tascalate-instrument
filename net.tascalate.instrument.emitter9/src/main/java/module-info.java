@@ -35,9 +35,9 @@
  */
 module net.tascalate.instrument.emitter {
     // For Java Agent / Bytecode Weaving Tools authors
-    exports net.tascalate.instrument.spi;
+    exports net.tascalate.instrument.emitter.spi;
     //For users of bytecode weaving tools
-    exports net.tascalate.instrument.api;
+    exports net.tascalate.instrument.emitter.api;
     
     requires jdk.unsupported;
 } 

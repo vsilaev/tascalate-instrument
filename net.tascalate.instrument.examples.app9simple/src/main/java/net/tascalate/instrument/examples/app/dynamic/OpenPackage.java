@@ -31,6 +31,6 @@
  */
 package net.tascalate.instrument.examples.app.dynamic;
 
-import net.tascalate.instrument.api.AbstractOpenPackage;
+import net.tascalate.instrument.emitter.api.AbstractOpenPackage;
 
 public final class OpenPackage extends AbstractOpenPackage {}

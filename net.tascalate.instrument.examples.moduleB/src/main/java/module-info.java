@@ -30,7 +30,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-import net.tascalate.instrument.api.AllowDynamicClasses;
+import net.tascalate.instrument.emitter.api.AllowDynamicClasses;
 import net.tascalate.instrument.examples.moduleB.internalX.PackageExtenderX;
 import net.tascalate.instrument.examples.moduleB.internalY.PackageExtenderY;
 
@@ -48,8 +48,10 @@ module net.tascalate.instrument.examples.moduleB {
     // This is smth. that would be great to avoid, but, unfortunately, is
     // unavoidable
     // Increases the total verbosity a lot!
-    opens net.tascalate.instrument.examples.moduleB.internalX to net.tascalate.instrument.emitter;
-    opens net.tascalate.instrument.examples.moduleB.internalY to net.tascalate.instrument.emitter;
+    opens net.tascalate.instrument.examples.moduleB.internalX 
+       to net.tascalate.instrument.emitter;
+    opens net.tascalate.instrument.examples.moduleB.internalY 
+       to net.tascalate.instrument.emitter;
 
     // In-place rant. Why it's not possible to do the following:
     /*

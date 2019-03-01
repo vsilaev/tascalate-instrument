@@ -29,7 +29,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import net.tascalate.instrument.api.AllowDynamicClasses;
+import net.tascalate.instrument.emitter.api.AllowDynamicClasses;
 import net.tascalate.instrument.examples.app.dynamic.OpenPackage;
 
 /**
@@ -44,5 +44,6 @@ import net.tascalate.instrument.examples.app.dynamic.OpenPackage;
 module net.tascalate.instrument.examples.app {
 requires net.tascalate.instrument.emitter;
 
-    opens net.tascalate.instrument.examples.app.dynamic to net.tascalate.instrument.emitter;
+    opens net.tascalate.instrument.examples.app.dynamic 
+       to net.tascalate.instrument.emitter;
 }

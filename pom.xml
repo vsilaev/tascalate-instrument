@@ -43,16 +43,20 @@
 		<module>net.tascalate.instrument.emitter9</module>
 		<module>net.tascalate.instrument.emitter11</module>
 		<module>net.tascalate.instrument.emitter</module>
+		<module>net.tascalate.instrument.attach9</module>
+		<module>net.tascalate.instrument.attach</module>
 		<module>net.tascalate.instrument.examples.app8</module>
 		<module>net.tascalate.instrument.examples.app9simple</module>
 		<module>net.tascalate.instrument.examples.moduleA</module>
 		<module>net.tascalate.instrument.examples.moduleB</module>
 		<module>net.tascalate.instrument.examples.app9modular</module>
+		<module>net.tascalate.instrument.examples.load9</module>
 	</modules>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<license.header>../LICENSE</license.header>
+		<jna.version>5.2.0</jna.version>
 	</properties>
 
 	<dependencyManagement>

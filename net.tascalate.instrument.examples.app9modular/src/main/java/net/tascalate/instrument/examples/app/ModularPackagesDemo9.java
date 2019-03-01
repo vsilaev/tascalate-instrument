@@ -34,11 +34,11 @@ package net.tascalate.instrument.examples.app;
 import java.io.IOException;
 import java.security.ProtectionDomain;
 
+import net.tascalate.instrument.emitter.spi.ClassEmitter;
+import net.tascalate.instrument.emitter.spi.ClassEmitterException;
+import net.tascalate.instrument.emitter.spi.ClassEmitters;
 import net.tascalate.instrument.examples.moduleA.SampleClassA;
 import net.tascalate.instrument.examples.moduleB.SampleClassB;
-import net.tascalate.instrument.spi.ClassEmitter;
-import net.tascalate.instrument.spi.ClassEmitterException;
-import net.tascalate.instrument.spi.ClassEmitters;
 
 public class ModularPackagesDemo9 {
 
