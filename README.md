@@ -66,7 +66,7 @@ No changes to the code that invokes `AgentLoaders.attach(...)` or `AgentLoaders.
 
 Disclaimer. I'm aware that similar functionality exists in several libraries, like [ByteBuddy](https://bytebuddy.net/). But it's either tied very hard to the library itself, or requires some extra dependencies, so I deceided to roll-out my own solution with the only and _optional_ dependency to JNA. 
 
-# Instrument.Emit - defining Java classes dynamically
+# Instrument.Emitter - defining Java classes dynamically
 In the greate article [JDK 11 and Proxies in a World Past sun.misc.Unsafe](https://dzone.com/articles/jdk-11-and-proxies-in-a-world-past-sunmiscunsafe) Rafael Winterhalter (the author of [ByteBuddy](https://bytebuddy.net/)) touches a serious issue with Java 11+: after removal of `sun.misc.Unsafe.defineClass` method there is no option left for developers of Java Agents to define classes dynamically in the _same_ class loader as the one used to load the _primary_ class. "Primary" in this case is a class that is the target of current (re)-transformation. 
 
 To better understand the issue, let us recall how [ClassFileTransformer](https://docs.oracle.com/javase/9/docs/api/java/lang/instrument/ClassFileTransformer.html) interface is defined:
@@ -86,7 +86,7 @@ default byte[]	transform(Module module,
 ```
 The first method is available for Java 1.5-1.8, the second one is supported by Java version 9 and above. The only difference bewteen them is that the modern version get a [Module](https://docs.oracle.com/javase/9/docs/api/java/lang/Module.html) as a parameter. But what important here, is that neither of them receives a `Class<?>` as a paramneter, because `Class<?>` is not available at this phase (transformation). And it's even an error to call `ClassLoader.load(className)` here!
 
-So if there is no class, then there is no way to get a [MethodHadles.Lookup](https://docs.oracle.com/javase/9/docs/api/java/lang/invoke/MethodHandles.Lookup.html) to execute later [MethodHandles.Lookup.defineClass] to dynamically define any additional classes on the same class loader! Previously it was possible either via "deep reflection" on `ClassLoader` passed or via using `sun.misc.Unsafe.defineClass` with the very same class loader. No longer! By default, `java.lang` package is not opened to named modules since Java 9 and `sun.misc.Unsafe.defineClass` method is removed since Java 11. So any developer, who have to create additional classes during transformation of the `primary` class are blocked. Me included - my library [Tascalate Async/Await](https://github.com/vsilaev/tascalate-async-await) do exactly this: a body of the every asynchronous method of the trasformed classes is replaced with an anonymous class (sublass of `Runnable`). And it's necessary to define all these anonymous classes within the same class loader as the original class. I'm stucked. Here is why Tascalate Instrument libary was started.
+So if there is no class, then there is no way to get a [MethodHadles.Lookup](https://docs.oracle.com/javase/9/docs/api/java/lang/invoke/MethodHandles.Lookup.html) to execute later [MethodHandles.Lookup.defineClass](https://docs.oracle.com/javase/9/docs/api/java/lang/invoke/MethodHandles.Lookup.html#defineClass-byte:A-) to dynamically define any additional classes on the same class loader! Previously it was possible either via "deep reflection" on `ClassLoader` passed or via using `sun.misc.Unsafe.defineClass` with the very same class loader. No longer! By default, `java.lang` package is not opened to named modules since Java 9 and `sun.misc.Unsafe.defineClass` method is removed since Java 11. So any developer, who have to create additional classes during transformation of the `primary` class is blocked. Me included - my library [Tascalate Async/Await](https://github.com/vsilaev/tascalate-async-await) does exactly this: a body of the every asynchronous method of the trasformed classes is replaced with an anonymous class (sublass of `Runnable`). And it's necessary to define all these anonymous classes within the very same class loader as the original class. I'm stucked. Here is why Tascalate Instrument libary was started.
 
 Notice, that in Java 9 we get a [Module](https://docs.oracle.com/javase/9/docs/api/java/lang/Module.html) as a first parameter? By the way, it's an [AnnotatedElement](https://docs.oracle.com/javase/9/docs/api/java/lang/reflect/AnnotatedElement.html) and it's possible to define annotations on it... It's getting warmer... And an annotation may have a class as an attribute:
 ```java
@@ -96,13 +96,14 @@ public @interface MyModuleAnnotation {
     Class<?>[] value();
 }
 ```
-Now it's hot enough to see a solution! Unfortunatelly, this will put inevitable burden on library user, but there is no better way... anyway... So, the solution provided by Tascalate Instrument.Emit library is:
-1. The library provides the annotation `@AllowDynamicClasses` with `ElementType.MODULE` as target. 
+Now it's hot enough to see a solution! Unfortunatelly, this will put inevitable burden on library user, but there is no better way... anyway... So, the solution provided by Tascalate Instrument.Emitter library is:
+1. The library provides the annotation `@AllowDynamicClasses` with `ElementType.MODULE` as a target. 
 2. The `value` attribute of the annotation is defined as an array of classes, each extending `AbstractOpenPackage` class
-3. Library user must place a subclass of `AbstractOpenPackage` superclass in _every_ package where dynamic classes should be defined. It may be final, it may be abstract, but it must be public. See next step.
+3. Library user must place a subclass of `AbstractOpenPackage` superclass in _every_ package where dynamic classes should be defined. The class may be final, it may be abstract, but it must be public. See next step.
 4. Library user must use the following definition inside `module-info`:
 ```java
 import net.tascalate.instrument.emitter.api.AllowDynamicClasses;
+
 import net.tascalate.instrument.examples.app.controllers.OpenPackageControllers;
 import net.tascalate.instrument.examples.app.services.OpenPackageServices;
 import net.tascalate.instrument.examples.app.transformers.OpenPackageTransformers;
@@ -121,7 +122,7 @@ module net.tascalate.instrument.examples.app {
        to net.tascalate.instrument.emitter;       
 }
 ```
-I.e. annotate module with `@AllowDynamicClasses` and list all subclasses of `AbstractOpenPackage` as value; aditionally, open every target package to at least `net.tascalate.instrument.emitter` module. It's mandatory to use `requires net.tascalate.instrument.emitter` here while we are using its classes already. The library user did it work to support defining class dynamically. 
+I.e. annotate the module with `@AllowDynamicClasses` and list all subclasses of `AbstractOpenPackage` as the value; aditionally, open every target package to at least `net.tascalate.instrument.emitter` module. It's mandatory to use `requires net.tascalate.instrument.emitter` here while we are using its classes already. The library user completed her work to support defining classes dynamically. 
 
 Now let us see what Java Agent developer should do. Remember, that we have 2 different versions of the `ClassTransformer.transform` method? So agent developer should do the following, depending on the target Java version (pre-9 or post-9):
 ```java
@@ -138,13 +139,40 @@ ClassEmitters.Factory factory = ...; // created as above
 ClassEmitter emitter = factory.create(nameOfPackage);
 emitter.defineClass(classfileBuffer, protectionDomain);
 ```
-You see that the rest of code is identical and agnostic to the Java version used. All the burden to support "modular class definitions" is put to the final library user. And to the Tascalate Instrument.Emit library, sure.
+You see that the rest of the code is identical and agnostic to the Java version used. All the burden to support "modular class definitions" is put to the end-user of the library. And to the Tascalate Instrument.Emitter library itself, sure.
 
-Additionally, Tascalate Instrument.Emit provides a portable way to define classes not only to Java Agent developers, but to the authors of bytecode modifications libraries, like [ByteBuddy](https://bytebuddy.net/) or [CGLib](https://github.com/cglib/cglib). If you check `ClassEmitters` sources, pay attention to the name of the first parameter:
+Additionally, Tascalate Instrument.Emitter provides a portable way to define classes not only to Java Agent developers, but to the authors of general bytecode modifications libraries, like [ByteBuddy](https://bytebuddy.net/) or [CGLib](https://github.com/cglib/cglib). If you check `ClassEmitters` sources, pay attention to the name of the first parameter:
 ```java
 public static Factory of(Object moduleOrClass, ClassLoader classLoader)
 ```
-Yes, it accepts either `Class<?>` or `Module`. Or should be null otherwise. Depending on the currently running Java version (and other conditions, like named vs unnamed modules, JVM args), the method will return `ClassEmitters.Factory` that depends either on `Module` (if class is from `@AllowDynamicClasses` module or for the `ClassLoader` of the class). So the author of the bytecode modificat ion library is isolated from the specifics of Java, and may use portable `ClassEmitters.of(someSuperClass, someSuperClass.getClassLoader())` calls inside own code. And the final user will adopt the module as necessary and when necessary.
+Yes, it accepts either `Class<?>` or `Module`. Or should be null otherwise. Depending on the currently running Java version (and other conditions, like named vs unnamed modules, JVM args), the method will return `ClassEmitters.Factory` that depends either on `Module` (if class is from `@AllowDynamicClasses` module) or for the `ClassLoader` of the class. So the author of the bytecode modification library is isolated from the specifics of Java, and may use portable `ClassEmitters.of(someSuperClass, someSuperClass.getClassLoader())` calls inside own code. And the end-user will adopt the module as necessary and when necessary.
 
+It worht to mention, that developers, who creates own custom class loaders, may implement `ClassEmitters.Factory` interface for the custom class loader. And this factory will take precedence in the factory-resolution algorithm.
 
+To use a library with Java 8 you have to add the single dependency:
+```xml
+<dependency>
+    <groupId>net.tascalate.instrument</groupId>
+    <artifactId>net.tascalate.instrument.emitter</artifactId>
+    <version>#actual-version#</version>
+</dependency>
+```
+For Java 9 and above two dependencies are necessary (with exact scope rules):
+```xml
+<dependency>
+    <groupId>net.tascalate.instrument</groupId>
+    <artifactId>net.tascalate.instrument.emitter</artifactId>
+    <version>#actual-version#</version>
+    <scope>runtime</scope>
+</dependency>
+<!-- Compile-only dependency on *.spi9 *, scope PROVIDED -->
+<dependency>
+    <groupId>net.tascalate.instrument</groupId>
+    <artifactId>net.tascalate.instrument.emitter9</artifactId>
+    <version>#actual-version#</version>
+    <scope>compile</scope>
+    <optional>true</optional>
+</dependency>
+```
 
+This is an unfortunate consequencies how mutli-release JAR-s are supported at build-time: Java compiler doesn't see classes these exists for Java 9 and above (places under META-INF/versions/9 path in JAR) but do not exists at "default" (root) location.
