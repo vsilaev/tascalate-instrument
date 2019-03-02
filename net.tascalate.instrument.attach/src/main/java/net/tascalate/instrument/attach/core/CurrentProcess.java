@@ -33,6 +33,11 @@ package net.tascalate.instrument.attach.core;
 
 import java.io.File;
 import java.io.IOException;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import java.util.Locale;
 
 final class CurrentProcess {
@@ -58,7 +63,50 @@ final class CurrentProcess {
 
         return Long.parseLong(pid);
     }
+    
+    static ProcessBuilder redirectOutputOf(ProcessBuilder processBuilder) {
+        if (null == REDIRECT_OUTPUT) {
+            return processBuilder;
+        } else {
+            try {
+                return (ProcessBuilder) REDIRECT_OUTPUT.invoke(processBuilder, REDIRECT_INHERIT);
+            } catch (InvocationTargetException ex) {
+                throw new RuntimeException(ex);
+            } catch (IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+        }        
+    }
 
     private static final boolean IS_WINDOWS_OS = 
         System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows");
+    
+
+    private static final Method REDIRECT_OUTPUT;
+    private static final Object REDIRECT_INHERIT;
+
+    static {
+        Class<?> processBuilderClass = ProcessBuilder.class;
+        Method redirectOutput = null;
+        Object redirectInherit = null;
+        try {
+            Class<?> redirectClass = Class.forName("java.lang.ProcessBuilder$Redirect");
+
+            Field redirectInheritFiled = redirectClass.getField("INHERIT");
+            redirectInherit = redirectInheritFiled.get(null);
+
+            redirectOutput = processBuilderClass.getMethod("redirectOutput", redirectClass);
+        } catch (ClassNotFoundException ex) {
+            // Pitty, Java version is below 1.7
+        } catch (NoSuchMethodException ex) {
+            // Same reason
+        } catch (NoSuchFieldException ex) {
+            // Same reason
+        } catch (IllegalAccessException ex) {
+            // Should not happen
+            throw new RuntimeException(ex);
+        }
+        REDIRECT_OUTPUT = redirectOutput;
+        REDIRECT_INHERIT = redirectInherit;
+    }
 }

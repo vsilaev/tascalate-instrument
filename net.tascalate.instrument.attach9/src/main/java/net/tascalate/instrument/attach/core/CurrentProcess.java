@@ -31,6 +31,8 @@
  */
 package net.tascalate.instrument.attach.core;
 
+import java.lang.ProcessBuilder.Redirect;
+
 final class CurrentProcess {
     
     private CurrentProcess() {
@@ -38,5 +40,9 @@ final class CurrentProcess {
 
     static long pid() {
         return ProcessHandle.current().pid();
+    }
+    
+    static ProcessBuilder redirectOutputOf(ProcessBuilder processBuilder) {
+        return processBuilder.redirectOutput(Redirect.INHERIT);
     }
 }

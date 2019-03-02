@@ -28,7 +28,7 @@
 			<groupId>net.tascalate.instrument</groupId>
 			<artifactId>net.tascalate.instrument.emitter9</artifactId>
 			<version>${project.version}</version>
-			<scope>compile</scope>
+			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>

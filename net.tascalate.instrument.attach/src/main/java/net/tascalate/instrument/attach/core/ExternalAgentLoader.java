@@ -35,9 +35,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -123,7 +120,9 @@ public class ExternalAgentLoader extends AbstractAgentLoader implements SafeAgen
 
                 ProcessBuilder processBuilder = new ProcessBuilder().directory(currentDirectory).command(fullCommand);
 
-                Process process = redirected(processBuilder).start();
+                Process process = CurrentProcess.redirectOutputOf(processBuilder)
+                                                .redirectErrorStream(true)
+                                                .start();
 
                 int ret = process.waitFor();
                 if (ret != 0) {
@@ -183,55 +182,8 @@ public class ExternalAgentLoader extends AbstractAgentLoader implements SafeAgen
         return agentJar;
     }
 
-    private static ProcessBuilder redirected(ProcessBuilder processBuilder) {
-        if (null == REDIRECT_OUTPUT) {
-            return processBuilder;
-        } else {
-            try {
-                processBuilder = (ProcessBuilder) REDIRECT_OUTPUT.invoke(processBuilder, REDIRECT_INHERIT);
-                processBuilder = (ProcessBuilder) REDIRECT_ERROR.invoke(processBuilder, REDIRECT_INHERIT);
-            } catch (InvocationTargetException ex) {
-                throw new RuntimeException(ex);
-            } catch (IllegalAccessException ex) {
-                throw new RuntimeException(ex);
-            }
-            return processBuilder;
-        }
-    }
-
     private static String escape(String value) {
         return value.contains(" ") ? '"' + value + '"' : value;
     }
 
-    private static final Method REDIRECT_OUTPUT;
-    private static final Method REDIRECT_ERROR;
-    private static final Object REDIRECT_INHERIT;
-
-    static {
-        Class<?> processBuilderClass = ProcessBuilder.class;
-        Method redirectOutput = null;
-        Method redirectError = null;
-        Object redirectInherit = null;
-        try {
-            Class<?> redirectClass = Class.forName("java.lang.ProcessBuilder$Redirect");
-
-            Field redirectInheritFiled = redirectClass.getField("INHERIT");
-            redirectInherit = redirectInheritFiled.get(null);
-
-            redirectOutput = processBuilderClass.getMethod("redirectOutput", redirectClass);
-            redirectError = processBuilderClass.getMethod("redirectError", redirectClass);
-        } catch (ClassNotFoundException ex) {
-            // Pitty, Java version is below 1.7
-        } catch (NoSuchMethodException ex) {
-            // Same reason
-        } catch (NoSuchFieldException ex) {
-            // Same reason
-        } catch (IllegalAccessException ex) {
-            // Should not happen
-            throw new RuntimeException(ex);
-        }
-        REDIRECT_OUTPUT = redirectOutput;
-        REDIRECT_ERROR = redirectError;
-        REDIRECT_INHERIT = redirectInherit;
-    }
 }
