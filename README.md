@@ -175,4 +175,4 @@ For Java 9 and above two dependencies are necessary (with exact scope rules):
 </dependency>
 ```
 
-This is an unfortunate consequencies how mutli-release JAR-s are supported at build-time: Java compiler doesn't see classes these exists for Java 9 and above (places under META-INF/versions/9 path in JAR) but do not exists at "default" (root) location.
+This is an unfortunate consequencies how mutli-release JAR-s are supported at build-time: Java compiler doesn't see classes these exist only for Java 9 and above (placed under META-INF/versions/9 path in JAR) but do not exist at "default" (root) location.
