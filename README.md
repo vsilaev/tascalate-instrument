@@ -165,7 +165,7 @@ For Java 9 and above two dependencies are necessary (with exact scope rules):
     <version>#actual-version#</version>
     <scope>runtime</scope>
 </dependency>
-<!-- Compile-only dependency on *.spi9 *, scope PROVIDED -->
+<!-- Compile-only dependency on *.spi9 *, scope COMPILE and no propagation -->
 <dependency>
     <groupId>net.tascalate.instrument</groupId>
     <artifactId>net.tascalate.instrument.emitter9</artifactId>
