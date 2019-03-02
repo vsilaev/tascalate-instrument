@@ -32,8 +32,8 @@
 package net.tascalate.instrument.attach.api;
 
 public interface AgentLoader {
-    
+
     void attach(String agentJarPath);
     
-	void attach(String agentJarPath, String agentParams);
+    void attach(String agentJarPath, String agentParams);
 }

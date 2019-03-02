@@ -47,101 +47,105 @@ import com.sun.tools.attach.VirtualMachine;
 import net.tascalate.instrument.attach.api.AgentLoaderException;
 
 public class LocalAgentLoader extends AbstractAgentLoader implements SafeAgentLoader {
-	
-	private final boolean forkExternalAttachIfNecessary;
-	
-	public LocalAgentLoader() {
-		this(true);
-	}
-	
-	public LocalAgentLoader(boolean forkExternalAttachIfNecessary) {
-		this.forkExternalAttachIfNecessary = forkExternalAttachIfNecessary;
-	}
-	
-	public LocalAgentLoader(File alternativeToolsJar) {
-		this.forkExternalAttachIfNecessary = false;
-	}
 
-	@Override
-	public boolean isAvailable() {
-	    return IS_SELF_ATTACH_POSSIBLE || forkExternalAttachIfNecessary; 
-	}
-	
-	public void attach(String jarFile, String param) throws IllegalStateException {
-		attach(jarFile, param, CurrentProcess.pid());
-	}
-	
-	public static void main(String[] argv) throws IOException {
-		if (argv == null || argv.length < 2) {
-			System.out.println("Invalid arguments, ussage:");
-			System.out.println("java " + LocalAgentLoader.class.getName() + " <agent.jar> <process-id>");
-			System.exit(-1);
-		}
-		
-		File file = new File(argv[0]).getCanonicalFile();
-		if (!file.exists() || !file.canRead() || !file.isFile()) {
-			System.out.println("Agent archive file does not exist or not accessible: " + file.getAbsolutePath());
-			System.exit(-2);
-		}
-		
-		long pid = Long.valueOf(argv[1]);
-		String options = argv.length > 2 && !"--".equals(argv[2]) ? argv[2] : null; 
-		File alternativeToolsJar = argv.length > 3 ? new File(argv[3]) : null;
-		
-		new LocalAgentLoader(alternativeToolsJar).attach(file.getAbsolutePath(), options, pid);
+    private final boolean forkExternalAttachIfNecessary;
+
+    public LocalAgentLoader() {
+        this(true);
+    }
+
+    public LocalAgentLoader(boolean forkExternalAttachIfNecessary) {
+        this.forkExternalAttachIfNecessary = forkExternalAttachIfNecessary;
+    }
+
+    public LocalAgentLoader(File alternativeToolsJar) {
+        this.forkExternalAttachIfNecessary = false;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return IS_SELF_ATTACH_POSSIBLE || forkExternalAttachIfNecessary;
+    }
+
+    public void attach(String jarFile, String param) throws IllegalStateException {
+        attach(jarFile, param, CurrentProcess.pid());
+    }
+
+    public static void main(String[] argv) throws IOException {
+        if (argv == null || argv.length < 2) {
+            System.out.println("Invalid arguments, ussage:");
+            System.out.println("java " + LocalAgentLoader.class.getName() + " <agent.jar> <process-id>");
+            System.exit(-1);
+        }
+
+        File file = new File(argv[0]).getCanonicalFile();
+        if (!file.exists() || !file.canRead() || !file.isFile()) {
+            System.out.println("Agent archive file does not exist or not accessible: " + file.getAbsolutePath());
+            System.exit(-2);
+        }
+
+        long pid = Long.valueOf(argv[1]);
+        String options = argv.length > 2 && !"--".equals(argv[2]) ? argv[2] : null;
+        File alternativeToolsJar = argv.length > 3 ? new File(argv[3]) : null;
+
+        System.out.println("Starting agent " + file.getAbsolutePath() + "=" + options + " @ " + pid + "...");
+        new LocalAgentLoader(alternativeToolsJar).attach(file.getAbsolutePath(), options, pid);
         System.out.println("Completed agent start: " + file.getAbsolutePath() + "=" + options + " @ " + pid);
-	}
-	
-	void attach(String jarFile, String param, long pid) {
-		long ownPid = CurrentProcess.pid();
-		if (ownPid == pid) {
-			// Self-attach
-			if (!IS_SELF_ATTACH_POSSIBLE) {
-				if (forkExternalAttachIfNecessary) {
-					System.out.println("Forking process for external attach");
-					new ExternalAgentLoader(null).attach(jarFile, param, ownPid);
-					return;
-				} else {
-					throw new AgentLoaderException(
-						"Self-attach is disabled. For JDK 9+ please set system property\"jdk.attach.allowAttachSelf\" to true"
-					);
-				}
-			}
-		}
+    }
 
-		try {
-    		VirtualMachine vm = VirtualMachine.attach(String.valueOf(pid));
-    		try {
-    		   vm.loadAgent(jarFile, param); 
-    		} finally {
-    		    vm.detach();
-    		}
-		} catch (AttachNotSupportedException ex) {
-		    if (forkExternalAttachIfNecessary) {
-		        new ExternalAgentLoader(null).attach(jarFile, param, ownPid);    
-		    }
-		} catch (IOException | AgentInitializationException | AgentLoadException ex) {
-		    throw new AgentLoaderException("Agent injection not supported on this platform due to unknown reason", ex);
-		}
-	}
-	
-	boolean isExternalAttachPossible() {
-	    return true;
-	}
-	
+    void attach(String jarFile, String param, long pid) {
+        long ownPid = CurrentProcess.pid();
+        if (ownPid == pid) {
+            // Self-attach
+            if (!IS_SELF_ATTACH_POSSIBLE) {
+                if (forkExternalAttachIfNecessary) {
+                    System.out.println("Forking process for external attach");
+                    new ExternalAgentLoader(null).attach(jarFile, param, ownPid);
+                    return;
+                } else {
+                    throw new AgentLoaderException(
+                        "Self-attach is disabled. For JDK 9+ please set system property\"jdk.attach.allowAttachSelf\" to true"
+                    );
+                }
+            }
+        }
+
+        try {
+            VirtualMachine vm = VirtualMachine.attach(String.valueOf(pid));
+            try {
+                vm.loadAgent(jarFile, param);
+            } finally {
+                vm.detach();
+            }
+        } catch (AttachNotSupportedException ex) {
+            if (forkExternalAttachIfNecessary) {
+                new ExternalAgentLoader(null).attach(jarFile, param, ownPid);
+            } else {
+                throw new AgentLoaderException(ex);
+            }
+        } catch (IOException ex) {
+            throw new AgentLoaderException("Agent injection not supported on this platform due to unknown reason", ex);
+        } catch (AgentInitializationException | AgentLoadException ex) {
+            throw new AgentLoaderException("Internal error in Java Agent", ex);
+        }
+    }
+
+    boolean isExternalAttachPossible() {
+        return true;
+    }
+
     @Override
     public String toString() {
-        return getClass().getName() + "[v9, load-method=local-attach, is-availabel=" + IS_SELF_ATTACH_POSSIBLE + "]"; 
+        return getClass().getName() + "[v9, load-method=local-attach, is-availabel=" + IS_SELF_ATTACH_POSSIBLE + "]";
     }
-	
-	private static final BigDecimal V9 = BigDecimal.valueOf(9);
-	
-	private static final boolean IS_SELF_ATTACH_POSSIBLE;
-	
-	static {
-        String jvmSpec = System.getProperty("java.vm.specification.version");
-        BigDecimal jvmVersion = new BigDecimal(jvmSpec); 
-        IS_SELF_ATTACH_POSSIBLE = V9.compareTo(jvmVersion) <= 0 && Boolean.getBoolean("jdk.attach.allowAttachSelf");
-	}
 
+    private static final BigDecimal V9 = BigDecimal.valueOf(9);
+
+    private static final boolean IS_SELF_ATTACH_POSSIBLE;
+
+    static {
+        String jvmSpec = System.getProperty("java.vm.specification.version");
+        BigDecimal jvmVersion = new BigDecimal(jvmSpec);
+        IS_SELF_ATTACH_POSSIBLE = V9.compareTo(jvmVersion) <= 0 && Boolean.getBoolean("jdk.attach.allowAttachSelf");
+    }
 }

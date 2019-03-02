@@ -32,9 +32,11 @@
 package net.tascalate.instrument.attach.core;
 
 final class CurrentProcess {
-	private CurrentProcess() {}
-	
-	static long pid() {
-	    return ProcessHandle.current().pid();
-	}
+    
+    private CurrentProcess() {
+    }
+
+    static long pid() {
+        return ProcessHandle.current().pid();
+    }
 }

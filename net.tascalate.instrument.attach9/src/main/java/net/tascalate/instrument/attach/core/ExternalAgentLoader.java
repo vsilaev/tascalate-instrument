@@ -34,7 +34,7 @@ package net.tascalate.instrument.attach.core;
 import java.io.File;
 
 public class ExternalAgentLoader extends AbstractAgentLoader implements SafeAgentLoader {
-    
+
     public ExternalAgentLoader(File alternativeToolsJar) {
         throw new UnsupportedOperationException();
     }
@@ -48,7 +48,7 @@ public class ExternalAgentLoader extends AbstractAgentLoader implements SafeAgen
     public boolean isAvailable() {
         throw new UnsupportedOperationException();
     }
-    
+
     void attach(String agentJarPath, String agentParams, long pid) {
         throw new UnsupportedOperationException();
     }

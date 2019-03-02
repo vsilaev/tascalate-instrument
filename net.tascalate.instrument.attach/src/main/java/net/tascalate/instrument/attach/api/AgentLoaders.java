@@ -68,10 +68,10 @@ public final class AgentLoaders {
     public static void attach(String jarFile, String param) throws AgentLoaderException {
         getDefault().attach(jarFile, param);
     }
-    
+
     static class WithArgsCheck implements AgentLoader {
         private final AgentLoader loader;
-        
+
         WithArgsCheck(AgentLoader loader) {
             this.loader = loader;
         }
@@ -87,18 +87,16 @@ public final class AgentLoaders {
             checkFile(agentJarPath);
             loader.attach(agentJarPath, agentParams);
         }
-        
+
         @Override
         public String toString() {
             return loader.toString() + "**checking-file**";
         }
-        
+
         private void checkFile(String agentJarPath) {
             File f = new File(agentJarPath);
             if (!f.isFile() || !f.canRead()) {
-                throw new IllegalArgumentException(
-                    "Cannot access Java Agent JAR file: " + agentJarPath
-                );
+                throw new IllegalArgumentException("Cannot access Java Agent JAR file: " + agentJarPath);
             }
         }
     }

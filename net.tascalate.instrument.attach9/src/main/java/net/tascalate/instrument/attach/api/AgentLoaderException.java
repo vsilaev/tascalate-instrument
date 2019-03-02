@@ -36,27 +36,27 @@ import java.util.List;
 
 public class AgentLoaderException extends RuntimeException {
     private static final long serialVersionUID = -7604975671513792732L;
-    
+
     private List<String> errorMessages;
-    
+
     public AgentLoaderException(String message) {
         this(message, null);
     }
-    
+
     public AgentLoaderException(Throwable cause) {
         this(null, cause);
     }
-    
+
     public AgentLoaderException(String message, Throwable cause) {
         super(message, cause);
         errorMessages = Collections.emptyList();
     }
-    
+
     public AgentLoaderException(List<String> errorMessages) {
         super();
         this.errorMessages = errorMessages;
     }
-    
+
     public List<String> getErrorMessages() {
         return errorMessages;
     }
