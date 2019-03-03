@@ -50,6 +50,7 @@
 		<module>net.tascalate.instrument.examples.moduleA</module>
 		<module>net.tascalate.instrument.examples.moduleB</module>
 		<module>net.tascalate.instrument.examples.app9modular</module>
+		<module>net.tascalate.instrument.examples.load8</module>
 		<module>net.tascalate.instrument.examples.load9</module>
 	</modules>
 

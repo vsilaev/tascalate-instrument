@@ -34,14 +34,14 @@ package net.tascalate.instrument.examples.app;
 import net.tascalate.instrument.attach.api.AgentLoader;
 import net.tascalate.instrument.attach.api.AgentLoaders;
 
-public class LoadAgentDemo9 {
+public class LoadAgentDemo8 {
 
     public static void main(String[] args) throws Throwable {
         /*
         AgentLoader loader = AgentLoaders.getNative();
         AgentLoader loader = AgentLoaders.getLocal();
         AgentLoader loader = AgentLoaders.getExternal();
-        */        
+        */
         AgentLoader loader = AgentLoaders.getDefault();
         System.out.println(loader);
         loader.attach("./javaflow.instrument-continuations.jar");
