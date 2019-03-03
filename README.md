@@ -44,7 +44,7 @@ module net.tascalate.instrument.examples.app {
     requires net.tascalate.instrument.attach;
 }
 ```
-With this setup you will get working and portable code to attach Java Agents to the currently running application. But not the most optimal one, however. See, by default, for Java 9+ applications this code will create a small executable JAR to attach an agent to the current JVM from the external process and overcome self-attach restrictions. The better option is still possible, and it involves native JNI calls - hence, it's not enabled by default. 
+With this setup you will get working and portable code to attach Java Agents to the currently running application. But not the most optimal one, however. See, by default, for Java 9+ applications this code will create a small executable JAR to attach an agent to the current JVM from the external process and overcome self-attach restrictions. The better option is still possible, and it involves native calls via JNI - hence, it's not enabled by default. 
 
 To add JNI (or actually, [JNA](https://github.com/java-native-access/jna)) attach, you have to change the following:
 1. Add corresponding JNA dependecy:
@@ -64,7 +64,7 @@ module net.tascalate.instrument.examples.app {
 ```
 No changes to the code that invokes `AgentLoaders.attach(...)` or `AgentLoaders.getDefault().attach(...)` are required! And the code may still be used with all supported Java versions (1.6 - 11+).
 
-Disclaimer. I'm aware that similar functionality exists in several libraries, like [ByteBuddy](https://bytebuddy.net/). But it's either tied very hard to the library itself, or requires some extra dependencies, so I deceided to roll-out my own solution with the only and _optional_ dependency to JNA. 
+Footnote. I'm aware that similar functionality exists in several libraries, like [ByteBuddy](https://bytebuddy.net/). But it's either tied very hard to the library itself, or requires some extra dependencies, so I deceided to roll-out my own solution with the only and _optional_ dependency to JNA. 
 
 # Instrument.Emitter - defining Java classes dynamically
 In the greate article [JDK 11 and Proxies in a World Past sun.misc.Unsafe](https://dzone.com/articles/jdk-11-and-proxies-in-a-world-past-sunmiscunsafe) Rafael Winterhalter (the author of [ByteBuddy](https://bytebuddy.net/)) touches a serious issue with Java 11+: after removal of `sun.misc.Unsafe.defineClass` method there is no option left for developers of Java Agents to define classes dynamically in the _same_ class loader as the one used to load the _primary_ class. "Primary" in this case is a class that is the target of current (re)-transformation. 
@@ -175,4 +175,4 @@ For Java 9 and above two dependencies are necessary (with exact scope rules):
 </dependency>
 ```
 
-This is an unfortunate consequencies how mutli-release JAR-s are supported at build-time: Java compiler doesn't see classes these exists for Java 9 and above (places under META-INF/versions/9 path in JAR) but do not exists at "default" (root) location.
+This is an unfortunate consequencies how mutli-release JAR-s are supported at build-time: Java compiler doesn't see classes these exist only for Java 9 and above (placed under META-INF/versions/9 path in JAR) but do not exist at "default" (root) location.
