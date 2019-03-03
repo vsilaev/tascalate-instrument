@@ -70,5 +70,9 @@ public class SafeAgentLoaderChain implements Iterable<SafeAgentLoader> {
             idx++;
             return result;
         }
+        
+        public void remove() {
+            throw new UnsupportedOperationException("remove");
+        }
     }
 }
