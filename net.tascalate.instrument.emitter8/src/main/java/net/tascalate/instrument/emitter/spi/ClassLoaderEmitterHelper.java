@@ -31,7 +31,6 @@
  */
 package net.tascalate.instrument.emitter.spi;
 
-import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.security.AccessControlContext;
@@ -62,13 +61,7 @@ abstract class ClassLoaderEmitterHelper implements ClassEmitter {
             throw new IllegalStateException("ClassLoader is unloaded");
         }
         
-        final String className;
-        
-        try {
-            className = ReflectionHelper.getClassName(classBytes);
-        } catch (IOException ex) {
-            throw new ClassEmitterException(ex);
-        }
+        final String className = ReflectionHelper.getClassName(classBytes);
 
         try {
             return AccessController.doPrivileged(new PrivilegedExceptionAction<Class<?>>() {

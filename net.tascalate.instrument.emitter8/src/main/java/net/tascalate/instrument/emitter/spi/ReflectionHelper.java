@@ -31,53 +31,11 @@
  */
 package net.tascalate.instrument.emitter.spi;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 class ReflectionHelper {
     private ReflectionHelper() {}
     
-    static String getClassName(byte[] bytes) throws IOException {
-        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-        try {
-            return getClassName(in);
-        } finally {
-            in.close();
-        }
-    }
-    
-    // https://stackoverflow.com/questions/1649674/resolve-class-name-from-bytecode
-    static String getClassName(InputStream is) throws IOException {
-        DataInputStream dis = new DataInputStream(is);
-        dis.readLong(); // skip header and class version
-        int constantPoolSize = (dis.readShort() & 0xFFFF ) - 1;
-        int[] classes = new int[constantPoolSize];
-        String[] strings = new String[constantPoolSize];
-        for (int i = 0; i < constantPoolSize; i++) {
-            int t = dis.read();
-            switch (t) {
-                case 1:
-                    strings[i] = dis.readUTF(); 
-                    break;
-                case 5:
-                case 6:
-                    dis.readLong(); 
-                    i++; 
-                    break;
-                case 7:
-                    classes[i] = dis.readShort() & 0xFFFF;
-                    break;
-                case 8:
-                    dis.readShort();
-                    break;
-                default:
-                    dis.readInt();
-            }
-        }
-        dis.readShort(); // skip access flags
-        return strings[classes[(dis.readShort() & 0xFFFF) -1 ] - 1].replace('/', '.');
+    static String getClassName(byte[] bytes) {
+        return new ClassHeaderReader(bytes).getClassName();
     }
     
     static String packageNameOf(String className) {
