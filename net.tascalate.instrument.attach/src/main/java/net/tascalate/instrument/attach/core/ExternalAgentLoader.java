@@ -70,6 +70,28 @@ public class ExternalAgentLoader extends AbstractAgentLoader implements SafeAgen
     public void attach(String agentJarPath, String agentParams) {
         attach(agentJarPath, agentParams, CurrentProcess.pid());
     }
+    
+    public static void main(String[] argv) throws IOException {
+        if (argv == null || argv.length < 2) {
+            System.out.println("Invalid arguments, ussage:");
+            System.out.println("java " + LocalAgentLoader.class.getName() + " <agent.jar> <process-id>");
+            System.exit(-1);
+        }
+
+        File file = new File(argv[0]).getCanonicalFile();
+        if (!file.exists() || !file.canRead() || !file.isFile()) {
+            System.out.println("Agent archive file does not exist or not accessible: " + file.getAbsolutePath());
+            System.exit(-2);
+        }
+
+        long pid = Long.valueOf(argv[1]);
+        String options = argv.length > 2 && !"--".equals(argv[2]) ? argv[2] : null;
+        File alternativeToolsJar = argv.length > 3 ? new File(argv[3]) : null;
+
+        System.out.println("Starting agent " + file.getAbsolutePath() + "=" + options + " @ " + pid + "...");
+        new LocalAgentLoader(alternativeToolsJar).attach(file.getAbsolutePath(), options, pid);
+        System.out.println("Completed agent start: " + file.getAbsolutePath() + "=" + options + " @ " + pid);
+    }    
 
     void attach(String agentJarPath, String agentParams, long pid) {
         try {
@@ -78,11 +100,11 @@ public class ExternalAgentLoader extends AbstractAgentLoader implements SafeAgen
                 AgentLoaderException.class, 
                 AbstractAgentLoader.class,
                 SafeAgentLoader.class, 
-                ExternalAgentLoader.class, 
+                LocalAgentLoader.class, 
                 CurrentProcess.class
             };
             
-            File runnableJar = createJarFile(new HashSet<Class<?>>(Arrays.asList(classes)), LocalAgentLoader.class);
+            File runnableJar = createJarFile(new HashSet<Class<?>>(Arrays.asList(classes)), ExternalAgentLoader.class);
 
             System.out.println("Using temporary executable JAR: " + runnableJar.getCanonicalPath());
             try {
