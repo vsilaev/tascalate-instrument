@@ -35,7 +35,8 @@ class ReflectionHelper {
     private ReflectionHelper() {}
     
     static String getClassName(byte[] bytes) {
-        return new ClassHeaderReader(bytes).getClassName();
+        return new ClassHeaderReader(bytes).getClassName()
+                                           .replace('/', '.'); 
     }
     
     static String packageNameOf(String className) {
