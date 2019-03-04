@@ -29,12 +29,30 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/**
- * @author vsilaev
- *
- */
-module net.tascalate.instrument.emitter {
-    exports net.tascalate.instrument.emitter.spi;
-    exports net.tascalate.instrument.emitter.api;
-    requires static java.instrument;
-} 
+package net.tascalate.instrument.emitter.spi;
+
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.IllegalClassFormatException;
+import java.security.ProtectionDomain;
+
+public abstract class PortableClassFileTransformer implements ClassFileTransformer {
+
+    @Override
+    public final byte[] transform(ClassLoader loader, 
+                                  String className, Class<?> classBeingRedefined,
+                                  ProtectionDomain protectionDomain, 
+                                  byte[] classfileBuffer) throws IllegalClassFormatException {
+        return transform(
+            ClassEmitters.of(null, loader), null, loader, 
+            className, classBeingRedefined, protectionDomain, classfileBuffer
+        );
+    }
+    
+    public abstract byte[] transform(ClassEmitters.Factory emitters,
+                                     Object module,
+                                     ClassLoader loader,
+                                     String className, Class<?> classBeingRedefined,
+                                     ProtectionDomain protectionDomain, 
+                                     byte[] classfileBuffer) throws IllegalClassFormatException;
+
+}

@@ -39,5 +39,6 @@ module net.tascalate.instrument.emitter {
     //For users of bytecode weaving tools
     exports net.tascalate.instrument.emitter.api;
     
+    requires static java.instrument;
     requires jdk.unsupported;
 } 
