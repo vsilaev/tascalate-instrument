@@ -226,7 +226,7 @@ class ClassHeaderReader {
      *
      * @return the class access flags.
      */
-    public int getAccess() {
+    int getAccess() {
         return readUnsignedShort(header);
     }
 
@@ -235,43 +235,9 @@ class ClassHeaderReader {
      *
      * @return the internal class name.
      */
-    public String getClassName() {
+    String getClassName() {
         // this_class is just after the access_flags field (using 2 bytes).
         return readClass(header + 2, new char[maxStringLength]);
-    }
-
-    /**
-     * Returns the internal of name of the super class. For interfaces, the super class is
-     * {@link Object}.
-     *
-     * @return the internal name of the super class, or {@literal null} for
-     *         {@link Object} class.
-     */
-    public String getSuperName() {
-        // super_class is after the access_flags and this_class fields (2 bytes each).
-        return readClass(header + 4, new char[maxStringLength]);
-    }
-
-    /**
-     * Returns the internal names of the implemented interfaces.
-     *
-     * @return the internal names of the directly implemented interfaces. Inherited
-     *         implemented interfaces are not returned.
-     */
-    public String[] getInterfaces() {
-        // interfaces_count is after the access_flags, this_class and super_class fields
-        // (2 bytes each).
-        int currentOffset = header + 6;
-        int interfacesCount = readUnsignedShort(currentOffset);
-        String[] interfaces = new String[interfacesCount];
-        if (interfacesCount > 0) {
-            char[] charBuffer = new char[maxStringLength];
-            for (int i = 0; i < interfacesCount; ++i) {
-                currentOffset += 2;
-                interfaces[i] = readClass(currentOffset, charBuffer);
-            }
-        }
-        return interfaces;
     }
 
     // -----------------------------------------------------------------------------------------------
@@ -281,56 +247,6 @@ class ClassHeaderReader {
     // -----------------------------------------------------------------------------------------------
     // Utility methods: low level parsing
     // -----------------------------------------------------------------------------------------------
-
-    /**
-     * Returns the number of entries in the class's constant pool table.
-     *
-     * @return the number of entries in the class's constant pool table.
-     */
-    public int getItemCount() {
-        return cpInfoOffsets.length;
-    }
-
-    /**
-     * Returns the start offset in {@link #b} of a JVMS 'cp_info' structure (i.e. a
-     * constant pool entry), plus one. <i>This method is intended for
-     * Attribute sub classes, and is normally not needed by class generators
-     * or adapters.</i>
-     *
-     * @param constantPoolEntryIndex
-     *            the index a constant pool entry in the class's constant pool
-     *            table.
-     * @return the start offset in {@link #b} of the corresponding JVMS 'cp_info'
-     *         structure, plus one.
-     */
-    public int getItem(final int constantPoolEntryIndex) {
-        return cpInfoOffsets[constantPoolEntryIndex];
-    }
-
-    /**
-     * Returns a conservative estimate of the maximum length of the strings
-     * contained in the class's constant pool table.
-     *
-     * @return a conservative estimate of the maximum length of the strings
-     *         contained in the class's constant pool table.
-     */
-    public int getMaxStringLength() {
-        return maxStringLength;
-    }
-
-    /**
-     * Reads a byte value in {@link #b}. <i>This method is intended for
-     * Attribute sub classes, and is normally not needed by class generators
-     * or adapters.</i>
-     *
-     * @param offset
-     *            the start offset of the value to be read in {@link #b}.
-     * @return the read value.
-     */
-    public int readByte(final int offset) {
-        return b[offset] & 0xFF;
-    }
-
     /**
      * Reads an unsigned short value in {@link #b}. <i>This method is intended for
      * Attribute sub classes, and is normally not needed by class generators
@@ -340,7 +256,7 @@ class ClassHeaderReader {
      *            the start index of the value to be read in {@link #b}.
      * @return the read value.
      */
-    public int readUnsignedShort(final int offset) {
+    private int readUnsignedShort(final int offset) {
         byte[] classFileBuffer = b;
         return ((classFileBuffer[offset] & 0xFF) << 8) | (classFileBuffer[offset + 1] & 0xFF);
     }
@@ -354,41 +270,12 @@ class ClassHeaderReader {
      *            the start offset of the value to be read in {@link #b}.
      * @return the read value.
      */
-    public short readShort(final int offset) {
+    private short readShort(final int offset) {
         byte[] classFileBuffer = b;
         return (short) (((classFileBuffer[offset] & 0xFF) << 8) | (classFileBuffer[offset + 1] & 0xFF));
     }
 
-    /**
-     * Reads a signed int value in {@link #b}. <i>This method is intended for
-     * Attribute sub classes, and is normally not needed by class generators
-     * or adapters.</i>
-     *
-     * @param offset
-     *            the start offset of the value to be read in {@link #b}.
-     * @return the read value.
-     */
-    public int readInt(final int offset) {
-        byte[] classFileBuffer = b;
-        return ((classFileBuffer[offset] & 0xFF) << 24) | ((classFileBuffer[offset + 1] & 0xFF) << 16)
-                | ((classFileBuffer[offset + 2] & 0xFF) << 8) | (classFileBuffer[offset + 3] & 0xFF);
-    }
-
-    /**
-     * Reads a signed long value in {@link #b}. <i>This method is intended for
-     * Attribute sub classes, and is normally not needed by class generators
-     * or adapters.</i>
-     *
-     * @param offset
-     *            the start offset of the value to be read in {@link #b}.
-     * @return the read value.
-     */
-    public long readLong(final int offset) {
-        long l1 = readInt(offset);
-        long l0 = readInt(offset + 4) & 0xFFFFFFFFL;
-        return (l1 << 32) | l0;
-    }
-
+    
     /**
      * Reads a CONSTANT_Utf8 constant pool entry in {@link #b}. <i>This method is
      * intended for Attribute sub classes, and is normally not needed by
@@ -405,7 +292,7 @@ class ClassHeaderReader {
      */
     // DontCheck(AbbreviationAsWordInName): can't be renamed (for backward binary
     // compatibility).
-    public String readUTF8(final int offset, final char[] charBuffer) {
+    private String readUTF8(final int offset, final char[] charBuffer) {
         int constantPoolEntryIndex = readUnsignedShort(offset);
         if (offset == 0 || constantPoolEntryIndex == 0) {
             return null;
@@ -424,7 +311,7 @@ class ClassHeaderReader {
      *            sufficiently large. It is not automatically resized.
      * @return the String corresponding to the specified CONSTANT_Utf8 entry.
      */
-    final String readUtf(final int constantPoolEntryIndex, final char[] charBuffer) {
+    final private String readUtf(final int constantPoolEntryIndex, final char[] charBuffer) {
         String value = constantUtf8Values[constantPoolEntryIndex];
         if (value != null) {
             return value;
@@ -503,43 +390,7 @@ class ClassHeaderReader {
      *            sufficiently large. It is not automatically resized.
      * @return the String corresponding to the specified CONSTANT_Class entry.
      */
-    public String readClass(final int offset, final char[] charBuffer) {
-        return readStringish(offset, charBuffer);
-    }
-
-    /**
-     * Reads a CONSTANT_Module constant pool entry in {@link #b}. <i>This method is
-     * intended for Attribute sub classes, and is normally not needed by
-     * class generators or adapters.</i>
-     *
-     * @param offset
-     *            the start offset of an unsigned short value in {@link #b}, whose
-     *            value is the index of a CONSTANT_Module entry in class's constant
-     *            pool table.
-     * @param charBuffer
-     *            the buffer to be used to read the item. This buffer must be
-     *            sufficiently large. It is not automatically resized.
-     * @return the String corresponding to the specified CONSTANT_Module entry.
-     */
-    public String readModule(final int offset, final char[] charBuffer) {
-        return readStringish(offset, charBuffer);
-    }
-
-    /**
-     * Reads a CONSTANT_Package constant pool entry in {@link #b}. <i>This method is
-     * intended for Attribute sub classes, and is normally not needed by
-     * class generators or adapters.</i>
-     *
-     * @param offset
-     *            the start offset of an unsigned short value in {@link #b}, whose
-     *            value is the index of a CONSTANT_Package entry in class's constant
-     *            pool table.
-     * @param charBuffer
-     *            the buffer to be used to read the item. This buffer must be
-     *            sufficiently large. It is not automatically resized.
-     * @return the String corresponding to the specified CONSTANT_Package entry.
-     */
-    public String readPackage(final int offset, final char[] charBuffer) {
+    private String readClass(final int offset, final char[] charBuffer) {
         return readStringish(offset, charBuffer);
     }
 
