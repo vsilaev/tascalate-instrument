@@ -135,7 +135,7 @@ ClassEmitters.Factory factory = ClassEmitters.of(module, classLoader); // Java 9
 ```
 Obviously, the `module-info` of Java agent must include `requires net.tascalate.instrument.emitter`. Most probably, Java Agent developer will create multi-release JAR with two versions, each differs in a way it constructs `ClassEmiters.Factory`. 
 
-To simplify this task, the library include class abstract PortableClassFileTransformer class that already provides construction of the necessary `ClassEmitters.Factory`. The Java Agent developer must extend it and implement the single abstract method:
+To simplify this task, the library includes abstract PortableClassFileTransformer class that already provides construction of the necessary `ClassEmitters.Factory`. The Java Agent developer must extend it and implement the single abstract method:
 ```java
 import net.tascalate.instrument.emitter.spi.ClassEmitter;
 import net.tascalate.instrument.emitter.spi.ClassEmitterException;
