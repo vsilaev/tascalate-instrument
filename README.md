@@ -133,9 +133,32 @@ import net.tascalate.instrument.emitter.spi.ClassEmitters;
 ClassEmitters.Factory factory = ClassEmitters.of(null, classLoader); // Java 1.6-1.8
 ClassEmitters.Factory factory = ClassEmitters.of(module, classLoader); // Java 9+
 ```
-Obviously, the `module-info` of Java agent must include `requires net.tascalate.instrument.emitter`. Most probably, Java Agent developer will create multi-release JAR with two versions, each differs in a way it constructs `ClassEmiters.Factory`. After this step everything will be identical:
+Obviously, the `module-info` of Java agent must include `requires net.tascalate.instrument.emitter`. Most probably, Java Agent developer will create multi-release JAR with two versions, each differs in a way it constructs `ClassEmiters.Factory`. 
+
+To simplify this task, the library include class abstract PortableClassFileTransformer class that already provides construction of the necessary `ClassEmitters.Factory`. The Java Agent developer must extend it and implement the single abstract method:
 ```java
-ClassEmitters.Factory factory = ...; // created as above
+import net.tascalate.instrument.emitter.spi.ClassEmitter;
+import net.tascalate.instrument.emitter.spi.ClassEmitterException;
+import net.tascalate.instrument.emitter.spi.ClassEmitters;
+import net.tascalate.instrument.emitter.spi.PortableClassFileTransformer;
+
+public class MyClassTransformer extends PortableClassFileTransformer {
+    @Override
+    public byte[] transform(ClassEmitters.Factory emitters,
+                            Object module,
+                            ClassLoader loader,
+                            String className, Class<?> classBeingRedefined,
+                            ProtectionDomain protectionDomain, 
+                            byte[] classfileBuffer) throws IllegalClassFormatException {
+                            
+        // Define classes using ClassEmitters.Factory emitters 
+    }
+}
+```
+
+After this everything will be uniform across all Java versions:
+```java
+ClassEmitters.Factory factory = ...; // created as above or get via parameter in PortableClassFileTransformer
 ClassEmitter emitter = factory.create(nameOfPackage);
 emitter.defineClass(classfileBuffer, protectionDomain);
 ```
