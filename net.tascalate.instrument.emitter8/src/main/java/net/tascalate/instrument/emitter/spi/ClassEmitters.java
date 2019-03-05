@@ -53,6 +53,10 @@ public final class ClassEmitters {
     }
 
     public static Factory of(ClassLoader classLoader) {
+        return of(classLoader, true);
+    }
+    
+    public static Factory of(ClassLoader classLoader, boolean mandatory) {
         if (null == classLoader) {
             throw new NullPointerException();
         }
@@ -63,6 +67,10 @@ public final class ClassEmitters {
     }
 
     public static Factory of(Object moduleOrClass, ClassLoader classLoader) {
+        return of(moduleOrClass, classLoader, true);
+    }
+    
+    public static Factory of(Object moduleOrClass, ClassLoader classLoader, boolean mandatory) {
         ClassLoader altClassLoader = null;
         if (null != moduleOrClass) {
             if (Class.class == moduleOrClass.getClass()) {
@@ -82,6 +90,6 @@ public final class ClassEmitters {
             }
             // either class or module
         }
-        return ClassEmitters.of(ReflectionHelper.getBestClassLoader(altClassLoader, classLoader));
+        return ClassEmitters.of(ReflectionHelper.getBestClassLoader(altClassLoader, classLoader), mandatory);
     }
 }

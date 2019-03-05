@@ -57,8 +57,12 @@ public final class ClassEmitters {
          */
         abstract ClassEmitter create(String packageName) throws ClassEmitterException;
     }
-
+    
     public static Factory of(ClassLoader classLoader) {
+        return of(classLoader, true);
+    }
+
+    public static Factory of(ClassLoader classLoader, boolean mandatory) {
         Objects.requireNonNull(classLoader);
         if (classLoader instanceof Factory) {
             // Custom class loader that defines method explicitly
@@ -74,18 +78,22 @@ public final class ClassEmitters {
             return new UnsafeEmitters(classLoader);
         } else {
             // Out of luck on this path
-            throw new IllegalStateException(
-                "ClassLoader-based injection is unavailable.\n" +
-                "Please either start Java with command-line option --add-opens java.base/java.lang=" +
-                (SELF_MODULE.isNamed() ? SELF_MODULE.getName() : "ALL-UNNAMED") + "\n" +
-                "or configure your module with @" + AllowDynamicClasses.class.getName() + " annotation and \n" +
-                "use " + ClassEmitters.class.getName() + ".of(moduleOrClass, classLoader) method."
-            );
+            if (mandatory) {
+                throw new IllegalStateException(
+                    "ClassLoader-based injection is unavailable.\n" +
+                    "Please either start Java with command-line option --add-opens java.base/java.lang=" +
+                    (SELF_MODULE.isNamed() ? SELF_MODULE.getName() : "ALL-UNNAMED") + "\n" +
+                    "or configure your module with @" + AllowDynamicClasses.class.getName() + " annotation and \n" +
+                    "use " + ClassEmitters.class.getName() + ".of(moduleOrClass, classLoader) method."
+                );
+            } else {
+                return EmptyClassEmitters.INSTANCE;
+            }
         }
     }
 
     public static Factory of(Module module) {
-        return of(module, false);
+        return of(module, true);
     }
 
     public static Factory of(Module module, boolean mandatory) {
@@ -105,11 +113,15 @@ public final class ClassEmitters {
     }
     
     public static Factory of(Object moduleOrClass, ClassLoader classLoader) {
+        return of(moduleOrClass, classLoader, true);
+    }
+    
+    public static Factory of(Object moduleOrClass, ClassLoader classLoader, boolean mandatory) {
         if (moduleOrClass instanceof Class) {
             Class<?> clazz = (Class<?>)moduleOrClass;
             ClassLoader altClassLoader = clazz.getClassLoader();
             if (mayUseClassLoaderEmitters(classLoader) || (altClassLoader instanceof Factory)) {
-                return ClassEmitters.of(ReflectionHelper.getBestClassLoader(altClassLoader, classLoader));
+                return ClassEmitters.of(ReflectionHelper.getBestClassLoader(altClassLoader, classLoader), mandatory);
             } else {
                 Module module = clazz.getModule();
                 AllowDynamicClasses settings = module.getAnnotation(AllowDynamicClasses.class);
@@ -129,7 +141,7 @@ public final class ClassEmitters {
                         return new ModuleClassEmitters(module, new Class[] {clazz});
                     } else {
                         // In fact this will throw exception that explains everything
-                        return of(classLoader);
+                        return of(classLoader, mandatory);
                     }
                 }
             }
@@ -144,7 +156,7 @@ public final class ClassEmitters {
             } else {
                 // Non-configured module
                 // try our best with class loaders
-                return of(ReflectionHelper.getBestClassLoader(module.getClassLoader(), classLoader));
+                return of(ReflectionHelper.getBestClassLoader(module.getClassLoader(), classLoader), mandatory);
             }
         } else if (null != moduleOrClass) {
             throw new IllegalArgumentException(
@@ -153,7 +165,7 @@ public final class ClassEmitters {
                 " or instance of " + Module.class.getName()
             );
         } else {
-            return ClassEmitters.of(classLoader);
+            return ClassEmitters.of(classLoader, mandatory);
         }
     }
     
