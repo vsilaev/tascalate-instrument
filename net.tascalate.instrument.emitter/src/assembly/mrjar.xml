@@ -46,6 +46,7 @@
 			<unpackOptions>
 				<excludes>
 					<exclude>META-INF/**</exclude>
+					<exclude>**/AbstractOpenPackage.class</exclude>
 					<exclude>**/ClassEmitter.class</exclude>
 					<exclude>**/ClassEmitterException.class</exclude>
 					<exclude>**/ClassLoaderEmitterHelper.class</exclude>

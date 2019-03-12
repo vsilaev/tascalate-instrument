@@ -21,4 +21,16 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<debug>true</debug>
+					<debuglevel>none</debuglevel>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
