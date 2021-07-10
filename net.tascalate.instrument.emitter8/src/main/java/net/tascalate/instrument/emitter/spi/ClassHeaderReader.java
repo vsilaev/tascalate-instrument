@@ -52,7 +52,7 @@ class ClassHeaderReader {
      * array.
      */
     // DontCheck(MemberName): can't be renamed (for backward binary compatibility).
-    public final byte[] b;
+    private final byte[] b;
 
     /**
      * The offset in bytes, in {@link #b}, of each cp_info entry of the ClassFile's
@@ -78,7 +78,7 @@ class ClassHeaderReader {
     /**
      * The offset in bytes, in {@link #b}, of the ClassFile's access_flags field.
      */
-    public final int header;
+    private final int header;
 
     // -----------------------------------------------------------------------------------------------
     // Constructors
@@ -91,26 +91,7 @@ class ClassHeaderReader {
      *            the JVMS ClassFile structure to be read.
      */
     ClassHeaderReader(final byte[] classFile) {
-        this(classFile, 0, classFile.length);
-    }
-
-    /**
-     * Constructs a new {@link ClassHeaderReader} object.
-     *
-     * @param classFileBuffer
-     *            a byte array containing the JVMS ClassFile structure to be read.
-     * @param classFileOffset
-     *            the offset in byteBuffer of the first byte of the ClassFile to be
-     *            read.
-     * @param classFileLength
-     *            the length in bytes of the ClassFile to be read.
-     */
-    private ClassHeaderReader(final byte[] classFileBuffer, final int classFileOffset, final int classFileLength) { // NOPMD(UnusedFormalParameter)
-                                                                                                                    // used
-                                                                                                                    // for
-                                                                                                                    // backward
-                                                                                                                    // compatibility.
-        this(classFileBuffer, classFileOffset, /* checkClassVersion = */ true);
+        this(classFile, 0);
     }
 
     /**
@@ -125,16 +106,18 @@ class ClassHeaderReader {
      * @param checkClassVersion
      *            whether to check the class version or not.
      */
-    private ClassHeaderReader(final byte[] classFileBuffer, final int classFileOffset, final boolean checkClassVersion) {
+    private ClassHeaderReader(final byte[] classFileBuffer, final int classFileOffset) {
         b = classFileBuffer;
-        int V12 = 0 << 16 | 56;
+        /*
+        int V18 = 0 << 16 | 62;
         // Check the class' major_version. This field is after the magic and
         // minor_version fields, which
         // use 4 and 2 bytes respectively.
-        if (checkClassVersion && readShort(classFileOffset + 6) > V12) {
+        if (checkClassVersion && readShort(classFileOffset + 6) > V18) {
             throw new IllegalArgumentException(
                     "Unsupported class file major version " + readShort(classFileOffset + 6));
         }
+        */
         // Create the constant pool arrays. The constant_pool_count field is after the
         // magic,
         // minor_version and major_version fields, which use 4, 2 and 2 bytes
@@ -154,10 +137,10 @@ class ClassHeaderReader {
         int currentMaxStringLength = 0;
         @SuppressWarnings("unused")
         boolean hasConstantDynamic = false;
+        // The offset of the other entries depend on the total size of all the
+        // previous entries.        
         @SuppressWarnings("unused")
-        boolean hasConstantInvokeDynamic = false;
-        // The offset of the other entries depend on the total size of all the previous
-        // entries.
+        boolean hasBootstrapMethods = false;
         while (currentCpInfoIndex < constantPoolCount) {
             cpInfoOffsets[currentCpInfoIndex++] = currentCpInfoOffset + 1;
             int cpInfoSize;
@@ -172,11 +155,12 @@ class ClassHeaderReader {
                 break;
             case Symbol.CONSTANT_DYNAMIC_TAG:
                 cpInfoSize = 5;
+                hasBootstrapMethods = true;
                 hasConstantDynamic = true;
                 break;
             case Symbol.CONSTANT_INVOKE_DYNAMIC_TAG:
                 cpInfoSize = 5;
-                hasConstantInvokeDynamic = true;
+                hasBootstrapMethods = true;
                 break;
             case Symbol.CONSTANT_LONG_TAG:
             case Symbol.CONSTANT_DOUBLE_TAG:
@@ -214,21 +198,9 @@ class ClassHeaderReader {
         // entry.
         header = currentCpInfoOffset;
     }
-
     // -----------------------------------------------------------------------------------------------
     // Accessors
     // -----------------------------------------------------------------------------------------------
-
-    /**
-     * Returns the class's access flags. This value may not
-     * reflect Deprecated and Synthetic flags when bytecode is before 1.5 and those
-     * flags are represented by attributes.
-     *
-     * @return the class access flags.
-     */
-    int getAccess() {
-        return readUnsignedShort(header);
-    }
 
     /**
      * Returns the internal name of the class.
@@ -270,6 +242,7 @@ class ClassHeaderReader {
      *            the start offset of the value to be read in {@link #b}.
      * @return the read value.
      */
+    @SuppressWarnings("unused")
     private short readShort(final int offset) {
         byte[] classFileBuffer = b;
         return (short) (((classFileBuffer[offset] & 0xFF) << 8) | (classFileBuffer[offset + 1] & 0xFF));
