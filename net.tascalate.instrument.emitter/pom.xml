@@ -96,6 +96,9 @@
 							<type>jar</type>
 							<outputDirectory>${project.build.directory}/gen_sources</outputDirectory>
 							<includes>**/*.java</includes>
+							<excludes>
+								**/AbstractOpenPackage.java
+							</excludes>
 							<failOnMissingClassifierArtifact>true</failOnMissingClassifierArtifact>
 						</configuration>
 					</execution>
@@ -113,7 +116,6 @@
 							<outputDirectory>${project.build.directory}/gen_sources</outputDirectory>
 							<includes>**/*.java</includes>
 							<excludes>
-								**/AbstractOpenPackage.java, 
 								**/ClassEmitter.java, 
 								**/ClassEmitterException.java,
 								**/ClassLoaderEmitterHelper.java, 

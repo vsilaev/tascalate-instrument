@@ -69,7 +69,7 @@
 				</executions>
 			</plugin>
 			<!-- It's impossible to just extract module-info.class from attach9 -->
-			<!-- Otherwise all plugins are shocked (JavaDoc, AnimalSniffer      -->
+			<!-- Otherwise all plugins are shocked (JavaDoc, AnimalSniffer)     -->
 			<!-- So we rebuid module-info from the very same source             -->                                       
 			<plugin>
 				<groupId>org.moditect</groupId>
@@ -115,6 +115,8 @@
 						<!-- False alarm for classes shaded from attach9 -->
 						<ignores>
 							<ignore>java.lang.ProcessHandle</ignore>
+							<ignore>java.lang.ProcessBuilder</ignore>
+							<ignore>java.lang.ProcessBuilder$Redirect</ignore>
 							<ignore>com.sun.tools.attach.VirtualMachine</ignore>
 						</ignores>
 						<signature>
