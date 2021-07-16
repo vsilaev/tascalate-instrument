@@ -24,7 +24,7 @@
 		</dependencySet>
 		<dependencySet>
 			<includes>
-				<include>*:net.tascalate.instrument.emitter8</include>
+				<include>*:net.tascalate.instrument.emitter6</include>
 			</includes>
 			<outputDirectory>/</outputDirectory>
 			<useProjectArtifact>true</useProjectArtifact>
@@ -32,6 +32,23 @@
 			<unpackOptions>
 				<excludes>
 					<exclude>META-INF/**</exclude>
+					<exclude>**/J7ClassLoaderAPI.class</exclude>
+				</excludes>
+			</unpackOptions>			
+			<scope>runtime</scope>
+		</dependencySet>
+		<dependencySet>
+			<includes>
+				<include>*:net.tascalate.instrument.emitter7</include>
+			</includes>
+			<outputDirectory>/</outputDirectory>
+			<useProjectArtifact>true</useProjectArtifact>
+			<unpack>true</unpack>
+			<unpackOptions>
+				<excludes>
+					<exclude>META-INF/**</exclude>
+					<exclude>**/ClassLoaderAPI.class</exclude>
+					<exclude>**/Placeholder.class</exclude>
 				</excludes>
 			</unpackOptions>			
 			<scope>runtime</scope>
@@ -49,7 +66,8 @@
 					<exclude>**/AbstractOpenPackage.class</exclude>
 					<exclude>**/ClassEmitter.class</exclude>
 					<exclude>**/ClassEmitterException.class</exclude>
-					<exclude>**/ClassLoaderEmitterHelper.class</exclude>
+					<exclude>**/ClassLoaderAPI.class</exclude>
+					<exclude>**/ClassLoaderEmitters.class</exclude>
 					<exclude>**/EmptyClassEmitters.class</exclude>				
 					<exclude>**/ReflectionHelper.class</exclude>
 				</excludes>

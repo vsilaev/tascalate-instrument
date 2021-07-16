@@ -29,26 +29,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.tascalate.instrument.emitter.spi;
-/**
- * Placeholder class -- will be replaced with the code from *.emitter6
- */
-class ReflectionHelper {
-    private ReflectionHelper() {}
-    
-    static String getClassName(byte[] bytes) {
-        throw new UnsupportedOperationException();
-    }
-    
-    static String packageNameOf(String className) {
-        throw new UnsupportedOperationException();  
-    }
-    
-    static ClassLoader getBestClassLoader(ClassLoader a, ClassLoader b) {
-        throw new UnsupportedOperationException();
-    }
-    
-    static boolean isClassLoaderParent(ClassLoader classLoader, ClassLoader maybeParent) {
-        throw new UnsupportedOperationException();
-    }
+package net.tascalate.instrument.emitter.api;
+
+public class Placeholder {
+
 }

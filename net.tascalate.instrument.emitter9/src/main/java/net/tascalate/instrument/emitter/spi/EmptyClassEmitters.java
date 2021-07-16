@@ -31,6 +31,11 @@
  */
 package net.tascalate.instrument.emitter.spi;
 
+/**
+ * Placeholder class -- will be replaced with the code from *.emitter6
+ * @author vsilaev
+ *
+ */
 final class EmptyClassEmitters implements ClassEmitters.Factory {
     private EmptyClassEmitters() {
         throw new UnsupportedOperationException();

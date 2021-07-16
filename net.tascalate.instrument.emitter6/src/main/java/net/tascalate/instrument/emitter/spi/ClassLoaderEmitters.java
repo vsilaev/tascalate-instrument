@@ -29,45 +29,27 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.tascalate.instrument.attach.core;
+package net.tascalate.instrument.emitter.spi;
 
-import java.io.File;
-import java.io.IOException;
+class ClassLoaderEmitters implements ClassEmitters.Factory {
 
-import java.util.Locale;
+    private final ClassLoaderEmitter emitter;
 
-final class CurrentProcess {
-    private CurrentProcess() {
+    ClassLoaderEmitters(ClassLoader classLoader) {
+        emitter = new ClassLoaderEmitter(classLoader, CLASS_LOADER_API);
     }
 
-    static long pid() {
-        String pid = null;
-        if (!IS_WINDOWS_OS) {
-            final File self = new File("/proc/self");
-            try {
-                if (self.exists()) {
-                    pid = self.getCanonicalFile().getName();
-                }
-            } catch (IOException ignored) {
-            }
-        }
-
-        if (pid == null) {
-            String name = java.lang.management.ManagementFactory.getRuntimeMXBean().getName();
-            pid = name.substring(0, name.indexOf('@'));
-        }
-
-        return Long.parseLong(pid);
+    @Override
+    public ClassEmitter create(String packageName) {
+        return emitter;
     }
     
-    static ProcessBuilder redirectOutputOf(ProcessBuilder processBuilder) {
-        return PROCESS_OUTPUT_REDIRECTOR_INSTANCE.redirectOutput(processBuilder);
+    @Override
+    public String toString() {
+        return getClass().getName() + "[method=reflection, supported-packages=<any>, " + emitter.describe() + "]"; 
     }
-
-    private static final boolean IS_WINDOWS_OS = 
-        System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows");
-
-    private static final ProcessOutputRedirector PROCESS_OUTPUT_REDIRECTOR_INSTANCE;
+    
+    private static final ClassLoaderAPI CLASS_LOADER_API;
     
     static {
         String version = System.getProperty("java.version");
@@ -81,6 +63,12 @@ final class CurrentProcess {
             }
         } 
         int javaVersion = Integer.parseInt(version);
-        PROCESS_OUTPUT_REDIRECTOR_INSTANCE = javaVersion < 7 ? new LegacyProcessOutputRedirector() : new ModernProcessOutputRedirector();
+        if (javaVersion < 7) {
+            CLASS_LOADER_API = new J6ClassLoaderAPI();
+        } else if (javaVersion < 9) {
+            CLASS_LOADER_API = new J7ClassLoaderAPI();
+        } else {
+            CLASS_LOADER_API = new J9ClassLoaderAPI();
+        }
     }
 }

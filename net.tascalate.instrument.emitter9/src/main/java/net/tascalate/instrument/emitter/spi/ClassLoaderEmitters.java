@@ -31,110 +31,18 @@
  */
 package net.tascalate.instrument.emitter.spi;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.net.URL;
-import java.security.ProtectionDomain;
-
-import net.tascalate.instrument.emitter.spi.ClassEmitter;
-import net.tascalate.instrument.emitter.spi.ClassEmitters;
-
+/**
+ * Placeholder for actual class from *.emitter6
+ * @author vsilaev
+ *
+ */
 class ClassLoaderEmitters implements ClassEmitters.Factory {
-
-    private final ClassLoaderEmitterHelper emitter;
-
     ClassLoaderEmitters(ClassLoader classLoader) {
-        emitter = new ClassLoaderEmitterHelper(classLoader) {
-            @Override
-            Class<?> defineClass(String className, 
-                                 byte[] classBytes, 
-                                 ClassLoader classLoader,
-                                 ProtectionDomain protectionDomain) throws Exception {
-
-                return ClassLoaderEmitters.defineClass(className, classBytes, classLoader, protectionDomain);
-            }
-        };
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ClassEmitter create(String packageName)  {
-        return emitter;
+        throw new UnsupportedOperationException();
     }
-
-    static Class<?> defineClass(String className, 
-                                byte[] classBytes, 
-                                ClassLoader classLoader,
-                                ProtectionDomain protectionDomain) throws Exception {
-        
-        try {
-            Object lock = (Object)GET_CLASS_LOADING_LOCK.invokeExact(classLoader, className);
-            Class<?> clazz;
-            synchronized (lock) {
-                clazz = (Class<?>)FIND_LOADED_CLASS.invokeExact(classLoader, className);
-                if (null == clazz) {
-                    String packageName = ReflectionHelper.packageNameOf(className);
-                    if (null != packageName) {
-                        Package p = classLoader.getDefinedPackage(packageName);
-                        if (null == p) {
-                            p = (Package)DEFINE_PACKAGE.invoke(classLoader, packageName,
-                                                               (String)null, (String)null, (String)null, 
-                                                               (String)null, (String)null, (String)null, 
-                                                               (URL)null);
-                        }
-                    }
-                    clazz = (Class<?>)DEFINE_CLASS.invokeExact(
-                       classLoader, className, classBytes, 0, classBytes.length, protectionDomain
-                    );
-                } else {
-                    // throw ex???
-                }
-            }
-            return clazz;            
-        } catch (Error | RuntimeException ex) {
-            throw ex;
-        } catch (Throwable ex) {
-            throw new ClassEmitterException(ex);
-        }
-    }
-    
-    @Override
-    public String toString() {
-        return getClass().getName() + "[method=reflection, supported-packages=<any>, " + emitter.describe() + "]"; 
-    }
-    
-    private static final MethodHandle FIND_LOADED_CLASS;
-    private static final MethodHandle DEFINE_CLASS;
-    private static final MethodHandle GET_CLASS_LOADING_LOCK; 
-    private static final MethodHandle DEFINE_PACKAGE;
-
-    private static MethodHandle getMethod(MethodHandles.Lookup lookup, 
-                                          Class<?> clazz,
-                                          String methodName, 
-                                          Class<?> returnType, 
-                                          Class<?>... argTypes) throws ReflectiveOperationException {
-        return lookup.findVirtual(clazz, methodName, MethodType.methodType(returnType, argTypes));
-    }
-    
-    static {
-        Class<?> clazz = ClassLoader.class;
-        try {
-            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(clazz, MethodHandles.lookup());
-            FIND_LOADED_CLASS = getMethod(lookup, clazz, "findLoadedClass", Class.class, String.class);
-            
-            DEFINE_CLASS = getMethod(lookup, clazz,  "defineClass", Class.class, 
-                String.class, byte[].class, int.class, int.class, ProtectionDomain.class);
-            
-            GET_CLASS_LOADING_LOCK = getMethod(lookup, clazz, "getClassLoadingLock", Object.class, String.class);
-            
-            DEFINE_PACKAGE = getMethod(lookup, clazz, "definePackage", Package.class, 
-                String.class, 
-                String.class, String.class, String.class, String.class, String.class, String.class,
-                URL.class);
-            
-        } catch (ReflectiveOperationException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
 }

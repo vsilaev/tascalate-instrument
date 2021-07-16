@@ -41,5 +41,6 @@ module net.tascalate.instrument.attach {
     requires java.instrument;
     // LocalAgentLoader -- something to think about, what if Oracle removes it in JDK 15?
     requires jdk.attach;
+    requires java.logging;
     
 }

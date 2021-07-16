@@ -9,10 +9,10 @@
 		<relativePath>../</relativePath>
 	</parent>
 
-	<artifactId>net.tascalate.instrument.emitter8</artifactId>
+	<artifactId>net.tascalate.instrument.emitter7</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Tascalate Instrument / Emitter / Java 8</name>
+	<name>Tascalate Instrument / Emitter / Java 7</name>
 
 	<dependencies>
 		<dependency>
@@ -27,8 +27,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>6</source>
-					<target>6</target>
+					<source>7</source>
+					<target>7</target>
 					<debug>true</debug>
 					<debuglevel>none</debuglevel>
 				</configuration>
@@ -40,9 +40,13 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>animal-sniffer-maven-plugin</artifactId>
 					<configuration>
+						<!-- False alarm for classes shaded from attach9 -->
+						<ignores>
+							<ignore>java.lang.invoke.MethodHandle</ignore>
+						</ignores>
 						<signature>
 							<groupId>org.codehaus.mojo.signature</groupId>
-							<artifactId>java15</artifactId>
+							<artifactId>java17</artifactId>
 							<version>1.0</version>
 						</signature>
 					</configuration>
@@ -51,11 +55,10 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<configuration> 
-						<release>6</release> 
+						<release>7</release> 
 					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
-
 </project>

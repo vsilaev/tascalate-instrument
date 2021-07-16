@@ -31,27 +31,33 @@
  */
 package net.tascalate.instrument.emitter.spi;
 
+import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 
-abstract class ClassLoaderEmitterHelper implements ClassEmitter {
+abstract class ClassLoaderAPI {
+    abstract Object getClassLoadingLock(ClassLoader classLoader, String className) throws Throwable;
+    abstract Package getPackage(ClassLoader classLoader, String packageName) throws Throwable;
+    abstract Package definePackage(ClassLoader classLoader, String packageName) throws Throwable;
+    abstract Class<?> findLoadedClass(ClassLoader classLoader, String className) throws Throwable;
+    abstract Class<?> defineClass(ClassLoader classLoader, String className, byte[] classBytes, ProtectionDomain protectionDomain) throws Throwable; 
     
-    ClassLoaderEmitterHelper(ClassLoader classLoader) {
-        throw new UnsupportedOperationException();
-    }
-    
-    abstract Class<?> defineClass(String className, 
-                                  byte[] classBytes, 
-                                  ClassLoader classLoader,
-                                  ProtectionDomain protectionDomain) throws Exception;
-    
-    @Override
-    public final Class<?> defineClass(byte[] classBytes, 
-                                      ProtectionDomain protectionDomain) throws ClassEmitterException {
-        
-        throw new UnsupportedOperationException();
-    }
-    
-    String describe() {
-        throw new UnsupportedOperationException();
+    abstract int version();
+
+    static Method getMethod(boolean optional, Class<?> clazz, String methodName, Class<?>... args) {
+        try {
+            Method method = clazz.getDeclaredMethod(methodName, args);
+            method.setAccessible(true);
+            return method;
+        } catch (NoSuchMethodException ex) {
+            // OK, some JDK versions might miss methods
+            if (optional) {
+                return null;
+            } else {
+                throw new RuntimeException(ex);
+            }
+        } catch (SecurityException ex) {
+            // Should be available, if method exists
+            throw ex;
+        }
     }
 }

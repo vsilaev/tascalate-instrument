@@ -30,25 +30,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package net.tascalate.instrument.emitter.spi;
+
+import java.lang.reflect.Method;
+import java.security.ProtectionDomain;
+
 /**
- * Placeholder class -- will be replaced with the code from *.emitter6
+ * Placeholder for actual class from *.emitter6
+ * @author vsilaev
+ *
  */
-class ReflectionHelper {
-    private ReflectionHelper() {}
+abstract class ClassLoaderAPI {
+    abstract Object getClassLoadingLock(ClassLoader classLoader, String className) throws Throwable;
+    abstract Package getPackage(ClassLoader classLoader, String packageName) throws Throwable;
+    abstract Package definePackage(ClassLoader classLoader, String packageName) throws Throwable;
+    abstract Class<?> findLoadedClass(ClassLoader classLoader, String className) throws Throwable;
+    abstract Class<?> defineClass(ClassLoader classLoader, String className, byte[] classBytes, ProtectionDomain protectionDomain) throws Throwable; 
     
-    static String getClassName(byte[] bytes) {
-        throw new UnsupportedOperationException();
-    }
-    
-    static String packageNameOf(String className) {
-        throw new UnsupportedOperationException();  
-    }
-    
-    static ClassLoader getBestClassLoader(ClassLoader a, ClassLoader b) {
-        throw new UnsupportedOperationException();
-    }
-    
-    static boolean isClassLoaderParent(ClassLoader classLoader, ClassLoader maybeParent) {
+    abstract int version();
+
+    static Method getMethod(boolean optional, Class<?> clazz, String methodName, Class<?>... args) {
         throw new UnsupportedOperationException();
     }
 }

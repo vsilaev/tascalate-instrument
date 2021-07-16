@@ -39,19 +39,26 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
 
-abstract class ClassLoaderEmitterHelper implements ClassEmitter {
+import sun.misc.Unsafe;
+
+class UnsafeEmitter implements ClassEmitter {
     private final Reference<ClassLoader> classLoaderRef;
+    private final Unsafe unsafe;
     private final AccessControlContext accessCtx;
     
-    ClassLoaderEmitterHelper(ClassLoader classLoader) {
+    UnsafeEmitter(ClassLoader classLoader, Unsafe unsafe_) {
         classLoaderRef = new WeakReference<ClassLoader>(classLoader);
+        unsafe = unsafe_;
         accessCtx = AccessController.getContext();
     }
     
-    abstract Class<?> defineClass(String className, 
-                                  byte[] classBytes, 
-                                  ClassLoader classLoader,
-                                  ProtectionDomain protectionDomain) throws Exception;
+    @SuppressWarnings("removal")
+    private Class<?> defineClass(String className, 
+                                 byte[] classBytes, 
+                                 ClassLoader classLoader,
+                                 ProtectionDomain protectionDomain) throws Exception {
+        return unsafe.defineClass(className, classBytes, 0, classBytes.length, classLoader, protectionDomain);
+    }
     
     @Override
     public final Class<?> defineClass(final byte[] classBytes, 

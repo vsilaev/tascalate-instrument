@@ -39,7 +39,8 @@
 
 
 	<modules>
-		<module>net.tascalate.instrument.emitter8</module>
+		<module>net.tascalate.instrument.emitter6</module>
+		<module>net.tascalate.instrument.emitter7</module>
 		<module>net.tascalate.instrument.emitter9</module>
 		<module>net.tascalate.instrument.emitter11</module>
 		<module>net.tascalate.instrument.emitter</module>
@@ -57,7 +58,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<license.header>../LICENSE</license.header>
-		<jna.version>5.2.0</jna.version>
+		<jna.version>5.8.0</jna.version>
 	</properties>
 
 	<dependencyManagement>

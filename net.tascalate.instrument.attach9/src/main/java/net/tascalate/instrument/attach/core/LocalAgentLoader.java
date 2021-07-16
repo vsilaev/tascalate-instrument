@@ -37,6 +37,8 @@ package net.tascalate.instrument.attach.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
@@ -47,6 +49,7 @@ import net.tascalate.instrument.attach.api.AgentLoaderException;
 
 public class LocalAgentLoader extends AbstractAgentLoader implements SafeAgentLoader {
 
+    private final static Logger LOGGER = Logger.getLogger(LocalAgentLoader.class.getName());
     private final boolean forkExternalAttachIfNecessary;
 
     public LocalAgentLoader() {
@@ -76,7 +79,9 @@ public class LocalAgentLoader extends AbstractAgentLoader implements SafeAgentLo
             // Self-attach
             if (!IS_SELF_ATTACH_POSSIBLE) {
                 if (forkExternalAttachIfNecessary) {
-                    System.out.println("Forking process for external attach");
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.finer("Forking process for external attach");
+                    }
                     new ExternalAgentLoader(null).attach(jarFile, param, ownPid);
                     return;
                 } else {

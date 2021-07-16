@@ -16,7 +16,14 @@
 	<dependencies>
 		<dependency>
 			<groupId>net.tascalate.instrument</groupId>
-			<artifactId>net.tascalate.instrument.emitter8</artifactId>
+			<artifactId>net.tascalate.instrument.emitter6</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>net.tascalate.instrument</groupId>
+			<artifactId>net.tascalate.instrument.emitter7</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 			<optional>true</optional>
@@ -84,14 +91,14 @@
 				<version>3.1.1</version>
 				<executions>
 					<execution>
-						<id>unpack-sources-8</id>
+						<id>unpack-sources-6-7</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>unpack-dependencies</goal>
 						</goals>
 						<configuration>
 							<includeGroupIds>${project.groupId}</includeGroupIds>
-							<includeArtifactIds>net.tascalate.instrument.emitter8</includeArtifactIds>
+							<includeArtifactIds>net.tascalate.instrument.emitter6</includeArtifactIds>
 							<classifier>sources</classifier>
 							<type>jar</type>
 							<outputDirectory>${project.build.directory}/gen_sources</outputDirectory>
@@ -118,7 +125,9 @@
 							<excludes>
 								**/ClassEmitter.java, 
 								**/ClassEmitterException.java,
-								**/ClassLoaderEmitterHelper.java, 
+								**/ClassLoaderAPI.java, 
+								**/ClassLoaderEmitters.java, 
+								**/J9ClassLoaderAPI.java, 
 								**/ReflectionHelper.java,
 								**/EmptyClassEmitters.java</excludes>
 							<failOnMissingClassifierArtifact>true</failOnMissingClassifierArtifact>

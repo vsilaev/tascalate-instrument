@@ -45,12 +45,15 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.tascalate.instrument.attach.api.AgentLoader;
 import net.tascalate.instrument.attach.api.AgentLoaderException;
 
 public class ExternalAgentLoader extends AbstractAgentLoader implements SafeAgentLoader {
 
+    private final static Logger LOGGER = Logger.getLogger(ExternalAgentLoader.class.getName());
     private final File alternativeToolsJar;
 
     public ExternalAgentLoader() {
@@ -88,9 +91,13 @@ public class ExternalAgentLoader extends AbstractAgentLoader implements SafeAgen
         String options = argv.length > 2 && !"--".equals(argv[2]) ? argv[2] : null;
         File alternativeToolsJar = argv.length > 3 ? new File(argv[3]) : null;
 
-        System.out.println("Starting agent " + file.getAbsolutePath() + "=" + options + " @ " + pid + "...");
+        if (LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.info("Starting agent " + file.getAbsolutePath() + "=" + options + " @ " + pid + "...");
+        }
         new LocalAgentLoader(alternativeToolsJar).attach(file.getAbsolutePath(), options, pid);
-        System.out.println("Completed agent start: " + file.getAbsolutePath() + "=" + options + " @ " + pid);
+        if (LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.info("Completed agent start: " + file.getAbsolutePath() + "=" + options + " @ " + pid);
+        }
     }    
 
     void attach(String agentJarPath, String agentParams, long pid) {
@@ -106,7 +113,9 @@ public class ExternalAgentLoader extends AbstractAgentLoader implements SafeAgen
             
             File runnableJar = createJarFile(new HashSet<Class<?>>(Arrays.asList(classes)), ExternalAgentLoader.class);
 
-            System.out.println("Using temporary executable JAR: " + runnableJar.getCanonicalPath());
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer("Using temporary executable JAR: " + runnableJar.getCanonicalPath());
+            }
             try {
                 File currentDirectory = new File(".").getCanonicalFile();
                 String javaCommand = 
@@ -138,7 +147,9 @@ public class ExternalAgentLoader extends AbstractAgentLoader implements SafeAgen
                     fullCommand.add(escape(alternativeToolsJar.getCanonicalPath()));
                 }
 
-                System.out.println("Using Java command: " + fullCommand);
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.finer("Using Java command: " + fullCommand);
+                }
 
                 ProcessBuilder processBuilder = new ProcessBuilder().directory(currentDirectory).command(fullCommand);
 
@@ -151,7 +162,9 @@ public class ExternalAgentLoader extends AbstractAgentLoader implements SafeAgen
                     throw new IllegalStateException(
                             "Could not self-attach to current VM using external process, exit code is: " + ret);
                 } else {
-                    System.out.println("External attach process completed successfully");
+                    if (LOGGER.isLoggable(Level.INFO)) {
+                        LOGGER.info("External attach process completed successfully");
+                    }
                 }
             } finally {
                 runnableJar.delete();
