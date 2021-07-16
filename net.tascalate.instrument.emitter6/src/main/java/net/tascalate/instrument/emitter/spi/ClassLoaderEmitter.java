@@ -112,7 +112,7 @@ class ClassLoaderEmitter implements ClassEmitter {
     
     String describe() {
         ClassLoader classLoader = classLoaderRef.get();
-        return "version=" + api.version() + ", class-loader=" + (null == classLoader ? "<evicted>" : classLoader.toString());
+        return "v" + api.version() + ", class-loader=" + (null == classLoader ? "<evicted>" : classLoader.toString());
     }
     
     private static ClassEmitterException wrap(Throwable ex) {
