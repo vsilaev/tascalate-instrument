@@ -70,4 +70,13 @@ public abstract class PortableClassFileTransformer implements ClassFileTransform
                                      ProtectionDomain protectionDomain, 
                                      byte[] classfileBuffer) throws IllegalClassFormatException;
 
+    public static byte[] callTransformer(@SuppressWarnings("exports") ClassFileTransformer transformer,
+                                         Object module,
+                                         ClassLoader loader,
+                                         String className, Class<?> classBeingRedefined,
+                                         ProtectionDomain protectionDomain,
+                                         byte[] classfileBuffer) throws IllegalClassFormatException {
+
+        return transformer.transform((Module)module, loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
+    }
 }

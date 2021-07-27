@@ -102,7 +102,7 @@ public class SimpleOpenPackagesDemo9 {
         }
 
         System.out.println("Created definer: " + definer);
-
+        System.out.println("Define class: " + ClassEmitters.classNameOf(classBytes));
         return definer.defineClass(classBytes, pd);
     }
 

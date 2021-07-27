@@ -51,6 +51,14 @@ public final class ClassEmitters {
          */
         abstract ClassEmitter create(String packageName) throws ClassEmitterException;
     }
+    
+    public static String classNameOf(byte[] classBytes) {
+        return ReflectionHelper.getClassName(classBytes);
+    }
+    
+    public static String packageNameOf(byte[] classBytes) {
+        return ReflectionHelper.packageNameOf(classNameOf(classBytes));
+    }
 
     public static Factory of(ClassLoader classLoader) {
         return of(classLoader, true);
