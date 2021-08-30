@@ -56,13 +56,13 @@ class ReflectionHelper {
                 return a;
             } else if (a == b) {
                 return b;
-            } else if (a instanceof ClassEmitters.Factory) {
-                if (b instanceof ClassEmitters.Factory) {
+            } else if (a instanceof ClassEmitter) {
+                if (b instanceof ClassEmitter) {
                     // resolve by hierarchy
                 } else {
                     return a;
                 }
-            } else if (b instanceof ClassEmitters.Factory) {
+            } else if (b instanceof ClassEmitter) {
                 return b;
             }
         }

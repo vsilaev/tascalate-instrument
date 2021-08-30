@@ -37,21 +37,7 @@ import net.tascalate.instrument.emitter.spi.ClassEmitters;
 public final class ClassEmitters {
     
     private ClassEmitters() {}
-    
-    public static interface Factory {
-        /**
-         * Lookup for a {@link ClassEmitter} for the given package.
-         * <p>If the provided package is not supported for class injection then null is returned 
-         * 
-         * @param packageName the name of the package (com.company.subpackage) where
-         *                    classes will be defined
-         * @return the {@link ClassEmitter} used to dynamically create classes inside 
-         *         the given package, or <code>null</code> if the package is not "open"
-         * @throws ClassEmitterException when some internal error happens, typically a wrapper for reflection exceptions
-         */
-        abstract ClassEmitter create(String packageName) throws ClassEmitterException;
-    }
-    
+
     public static String classNameOf(byte[] classBytes) {
         return ReflectionHelper.getClassName(classBytes);
     }
@@ -60,25 +46,25 @@ public final class ClassEmitters {
         return ReflectionHelper.packageNameOf(classNameOf(classBytes));
     }
 
-    public static Factory of(ClassLoader classLoader) {
+    public static ClassEmitter of(ClassLoader classLoader) {
         return of(classLoader, true);
     }
     
-    public static Factory of(ClassLoader classLoader, boolean mandatory) {
+    public static ClassEmitter of(ClassLoader classLoader, boolean mandatory) {
         if (null == classLoader) {
             throw new NullPointerException();
         }
-        if (classLoader instanceof Factory) {
-            return (Factory)classLoader;
+        if (classLoader instanceof ClassEmitter) {
+            return (ClassEmitter)classLoader;
         }
-        return new ClassLoaderEmitters(classLoader);
+        return new ClassLoaderEmitter(classLoader);
     }
 
-    public static Factory of(Object moduleOrClass, ClassLoader classLoader) {
+    public static ClassEmitter of(Object moduleOrClass, ClassLoader classLoader) {
         return of(moduleOrClass, classLoader, true);
     }
     
-    public static Factory of(Object moduleOrClass, ClassLoader classLoader, boolean mandatory) {
+    public static ClassEmitter of(Object moduleOrClass, ClassLoader classLoader, boolean mandatory) {
         ClassLoader altClassLoader = null;
         if (null != moduleOrClass) {
             if (Class.class == moduleOrClass.getClass()) {

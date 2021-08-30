@@ -59,19 +59,16 @@ public class SimpleOpenPackagesDemo9 {
         @SuppressWarnings("unchecked")
         Class<? extends Runnable> cls = (Class<? extends Runnable>) 
         defineClassDynamically(otherModule,
-                               dynamicClassName,
                                readResource(dynamicClassName.substring(dynamicClassName.lastIndexOf('.') + 1) + ".bytes"),
                                SimpleOpenPackagesDemo9.class.getProtectionDomain());
 
         // Pretty questionable deprecation of API
-        @SuppressWarnings("deprecation")
-        Runnable obj = cls.newInstance();
+        Runnable obj = cls.getConstructor().newInstance();
         obj.run();
         System.out.println("<<<<<<<<");
     }
 
     private static Class<?> defineClassDynamically(Module module, 
-                                                   String className, 
                                                    byte[] classBytes,
                                                    ProtectionDomain pd) throws ClassEmitterException {
 
@@ -84,7 +81,7 @@ public class SimpleOpenPackagesDemo9 {
         //ClassEmitters.Factory factory = ClassEmitters.of(SayHello.class, module.getClassLoader());
         
         //This will run on Java 9-11 with AllowDynamicClasses on module-info
-        ClassEmitters.Factory factory = ClassEmitters.of(module, module.getClassLoader());
+        ClassEmitter definer = ClassEmitters.of(module, module.getClassLoader());
         /*
          * Effectively, the call above is just the same as ClassDefiners.of(module); Two
          * args form is used to show that same pattern will be used with Java 6-8 and Java
@@ -92,17 +89,16 @@ public class SimpleOpenPackagesDemo9 {
          * ClassDefiners.of(null, classLoaderArg);
          */
 
-        System.out.println("Get factory: " + factory);
-
+        System.out.println("Got definer: " + definer);
+        String className = ClassEmitters.classNameOf(classBytes);
         String packageName = className.substring(0, className.lastIndexOf('.'));
 
-        ClassEmitter definer = factory.create(packageName);
         if (null == definer) {
             throw new IllegalArgumentException("No class definer exists for package " + packageName);
         }
 
         System.out.println("Created definer: " + definer);
-        System.out.println("Define class: " + ClassEmitters.classNameOf(classBytes));
+        System.out.println("Define class: " + className);
         return definer.defineClass(classBytes, pd);
     }
 

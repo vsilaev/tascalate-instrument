@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>net.tascalate.instrument</groupId>
 		<artifactId>net.tascalate.instrument.parent</artifactId>
-		<version>1.0.1</version>
+		<version>1.1.0</version>
 		<relativePath>../</relativePath>
 	</parent>
 
@@ -126,10 +126,9 @@
 								**/ClassEmitter.java, 
 								**/ClassEmitterException.java,
 								**/ClassLoaderAPI.java, 
-								**/ClassLoaderEmitters.java, 
+								**/ClassLoaderEmitter.java, 
 								**/J9ClassLoaderAPI.java, 
-								**/ReflectionHelper.java,
-								**/EmptyClassEmitters.java</excludes>
+								**/ReflectionHelper.java</excludes>
 							<failOnMissingClassifierArtifact>true</failOnMissingClassifierArtifact>
 						</configuration>
 					</execution>

@@ -34,6 +34,7 @@ package net.tascalate.instrument.emitter.spi;
 import java.lang.invoke.MethodHandles;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.security.ProtectionDomain;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,25 +45,34 @@ import java.util.stream.Stream;
 import net.tascalate.instrument.emitter.api.AbstractOpenPackage;
 import net.tascalate.instrument.emitter.api.AllowDynamicClasses;
 import net.tascalate.instrument.emitter.spi.ClassEmitter;
-import net.tascalate.instrument.emitter.spi.ClassEmitters;
 
-class ModuleClassEmitters implements ClassEmitters.Factory {
+class ModuleClassEmitter implements ClassEmitter {
 
     private final WeakReference<Module> targetModule;
     private final List<WeakReference<Class<?>>> packageClasses;
     private final MethodHandles.Lookup selfLookup = MethodHandles.lookup();
     private final Map<String, ClassEmitter> cachedDefiners = new HashMap<>();
 
-    ModuleClassEmitters(Module targetModule, Class<?>[] packageClasses) {
+    ModuleClassEmitter(Module targetModule, Class<?>[] packageClasses) {
         this.targetModule = new WeakReference<>(targetModule);
         // TODO: is keeping hard references is ok / mandatory?
         this.packageClasses = Stream.of(packageClasses)
-                                    .map(ModuleClassEmitters::weakReferenceOf)
+                                    .map(ModuleClassEmitter::weakReferenceOf)
                                     .collect(Collectors.toList());
     }
-
+    
     @Override
-    public ClassEmitter create(String packageName) throws ClassEmitterException {
+    public Class<?> defineClass(byte[] classBytes, ProtectionDomain protectionDomain) throws ClassEmitterException {
+        String packageName = ReflectionHelper.packageNameOf(ReflectionHelper.getClassName(classBytes));
+        ClassEmitter delegate = create(packageName);
+        if (null == delegate) {
+            throw new ClassEmitterException("No class emitter available for package " + packageName);
+        } else {
+            return delegate.defineClass(classBytes, protectionDomain);
+        }
+    }
+
+    private ClassEmitter create(String packageName) throws ClassEmitterException {
         ClassEmitter definer;
         synchronized (cachedDefiners) {
             definer = cachedDefiners.get(packageName);

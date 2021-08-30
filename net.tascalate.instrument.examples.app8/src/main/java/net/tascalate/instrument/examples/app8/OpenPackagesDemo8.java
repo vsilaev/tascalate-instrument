@@ -58,7 +58,6 @@ public class OpenPackagesDemo8 {
         Class<? extends Runnable> cls = (Class<? extends Runnable>)defineClassDynamically(
            null, // No module, ya!
            ClassLoader.getSystemClassLoader(), 
-           dynamicClassName,
            readResource(dynamicClassName.substring(dynamicClassName.lastIndexOf('.') + 1) + ".bytes"),
            OpenPackagesDemo8.class.getProtectionDomain()
        );
@@ -70,28 +69,25 @@ public class OpenPackagesDemo8 {
 
     private static Class<?> defineClassDynamically(Object module, 
                                                    ClassLoader classLoader, 
-                                                   String className, 
                                                    byte[] classBytes,
                                                    ProtectionDomain pd) throws ClassEmitterException {
 
-        ClassEmitters.Factory factory = ClassEmitters.of(module, classLoader);
+        ClassEmitter definer = ClassEmitters.of(module, classLoader);
         /*
          * Effectively, the call above is just the same as ClassDefiners.of(classLoader); 
          * Two args form is used to show that same pattern will be used with Java 6-8 and 
          * Java 9-11+ from instrumentation agents.
          */
 
-        System.out.println("Get factory: " + factory);
-
+        System.out.println("Got definer: " + definer);
+        String className = ClassEmitters.classNameOf(classBytes);
         String packageName = className.substring(0, className.lastIndexOf('.'));
-
-        ClassEmitter definer = factory.create(packageName);
         if (null == definer) {
             throw new IllegalArgumentException("No class definer exists for package " + packageName);
         }
 
         System.out.println("Created definer: " + definer);
-        System.out.println("Define class: " + ClassEmitters.classNameOf(classBytes));
+        System.out.println("Define class: " + className);
         return definer.defineClass(classBytes, pd);
     }
 

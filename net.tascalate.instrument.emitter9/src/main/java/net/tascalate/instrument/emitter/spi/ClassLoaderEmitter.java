@@ -31,20 +31,20 @@
  */
 package net.tascalate.instrument.emitter.spi;
 
+import java.security.ProtectionDomain;
+
 /**
- * Placeholder class -- will be replaced with the code from *.emitter6
+ * Placeholder for actual class from *.emitter6
  * @author vsilaev
  *
  */
-final class EmptyClassEmitters implements ClassEmitters.Factory {
-    private EmptyClassEmitters() {
+class ClassLoaderEmitter implements ClassEmitter {
+    ClassLoaderEmitter(ClassLoader classLoader) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public ClassEmitter create(String packageName) {
+    public Class<?> defineClass(byte[] classBytes, ProtectionDomain protectionDomain) throws ClassEmitterException {
         throw new UnsupportedOperationException();
     }
-
-    static final ClassEmitters.Factory INSTANCE = new EmptyClassEmitters();
 }

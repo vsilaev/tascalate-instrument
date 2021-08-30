@@ -37,27 +37,11 @@ import net.tascalate.instrument.emitter.api.AbstractOpenPackage;
 import net.tascalate.instrument.emitter.api.AllowDynamicClasses;
 import net.tascalate.instrument.emitter.spi.ClassEmitter;
 import net.tascalate.instrument.emitter.spi.ClassEmitters;
-import net.tascalate.instrument.emitter.spi.EmptyClassEmitters;
 
 public final class ClassEmitters {
     
     private ClassEmitters() {}
-    
-    public static interface Factory {
-    
-        /**
-         * Lookup for a {@link ClassEmitter} for the given package.
-         * <p>If the provided package is not supported for class injection then null is returned 
-         * 
-         * @param packageName the name of the package (com.company.subpackage) where
-         *                    classes will be defined
-         * @return the {@link ClassEmitter} used to dynamically create classes inside 
-         *         the given package, or <code>null</code> if the package is not "open"
-         * @throws ClassEmitterException when some internal error happens, typically a wrapper for reflection exceptions
-         */
-        abstract ClassEmitter create(String packageName) throws ClassEmitterException;
-    }
-    
+
     public static String classNameOf(byte[] classBytes) {
         return ReflectionHelper.getClassName(classBytes);
     }
@@ -66,24 +50,24 @@ public final class ClassEmitters {
         return ReflectionHelper.packageNameOf(classNameOf(classBytes));
     }
     
-    public static Factory of(ClassLoader classLoader) {
+    public static ClassEmitter of(ClassLoader classLoader) {
         return of(classLoader, true);
     }
 
-    public static Factory of(ClassLoader classLoader, boolean mandatory) {
+    public static ClassEmitter of(ClassLoader classLoader, boolean mandatory) {
         Objects.requireNonNull(classLoader);
-        if (classLoader instanceof Factory) {
+        if (classLoader instanceof ClassEmitter) {
             // Custom class loader that defines method explicitly
-            return (Factory)classLoader;
+            return (ClassEmitter)classLoader;
         } else if (CLASS_LOADER_EMITTERS_SUPPORTED) {
             // Good-old Java 8 class loader reflection
             // if Java 9 is started with option
             // --add-opens java.base/java.lang=net.tascalate.instrument.emitter
             // or to all unnamed modules and we are shaded inside unnamed module
-            return new ClassLoaderEmitters(classLoader);
+            return new ClassLoaderEmitter(classLoader);
         } else if (UnsafeSupport.isSupported()) {
             // Short flirt with Java 9 / 10 
-            return new UnsafeEmitters(classLoader);
+            return new UnsafeEmitter(classLoader);
         } else {
             // Out of luck on this path
             if (mandatory) {
@@ -95,16 +79,16 @@ public final class ClassEmitters {
                     "use " + ClassEmitters.class.getName() + ".of(moduleOrClass, classLoader) method."
                 );
             } else {
-                return EmptyClassEmitters.INSTANCE;
+                return null;
             }
         }
     }
 
-    public static Factory of(Module module) {
+    public static ClassEmitter of(Module module) {
         return of(module, true);
     }
 
-    public static Factory of(Module module, boolean mandatory) {
+    public static ClassEmitter of(Module module, boolean mandatory) {
         Objects.requireNonNull(module);
         AllowDynamicClasses settings = module.getAnnotation(AllowDynamicClasses.class);
         if (null == settings) {
@@ -114,21 +98,21 @@ public final class ClassEmitters {
                     "(not annotated with " + AllowDynamicClasses.class.getName() + ")"
                 );
             } else {
-                return EmptyClassEmitters.INSTANCE;
+                return null;
             }
         }
         return of(module, settings, null);
     }
     
-    public static Factory of(Object moduleOrClass, ClassLoader classLoader) {
+    public static ClassEmitter of(Object moduleOrClass, ClassLoader classLoader) {
         return of(moduleOrClass, classLoader, true);
     }
     
-    public static Factory of(Object moduleOrClass, ClassLoader classLoader, boolean mandatory) {
+    public static ClassEmitter of(Object moduleOrClass, ClassLoader classLoader, boolean mandatory) {
         if (moduleOrClass instanceof Class) {
             Class<?> clazz = (Class<?>)moduleOrClass;
             ClassLoader altClassLoader = clazz.getClassLoader();
-            if (mayUseClassLoaderEmitters(classLoader) || (altClassLoader instanceof Factory)) {
+            if (mayUseClassLoaderEmitters(classLoader) || (altClassLoader instanceof ClassEmitter)) {
                 return ClassEmitters.of(ReflectionHelper.getBestClassLoader(altClassLoader, classLoader), mandatory);
             } else {
                 Module module = clazz.getModule();
@@ -146,7 +130,7 @@ public final class ClassEmitters {
                             // So it's necessary to add "read" access dynamically
                             SELF_MODULE.addReads(module);
                         }
-                        return new ModuleClassEmitters(module, new Class[] {clazz});
+                        return new ModuleClassEmitter(module, new Class[] {clazz});
                     } else {
                         // In fact this will throw exception that explains everything
                         return of(classLoader, mandatory);
@@ -177,7 +161,7 @@ public final class ClassEmitters {
         }
     }
     
-    private static Factory of(Module module, AllowDynamicClasses settings, Class<?> extraClass) {
+    private static ClassEmitter of(Module module, AllowDynamicClasses settings, Class<?> extraClass) {
         Class<? extends AbstractOpenPackage>[] settingsClasses = settings.value();
         Class<?>[] packageClasses;
         if (extraClass == null) {
@@ -202,11 +186,11 @@ public final class ClassEmitters {
             SELF_MODULE.addReads(module);
         }
 
-        return new ModuleClassEmitters(module, packageClasses);        
+        return new ModuleClassEmitter(module, packageClasses);        
     }
     
     private static boolean mayUseClassLoaderEmitters(ClassLoader classLoader) {
-        return (classLoader instanceof Factory) ||
+        return (classLoader instanceof ClassEmitter) ||
                CLASS_LOADER_EMITTERS_SUPPORTED  ||
                UnsafeSupport.isSupported();
     }

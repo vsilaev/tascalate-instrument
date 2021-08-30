@@ -33,6 +33,7 @@ package net.tascalate.instrument.emitter.spi;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
@@ -46,7 +47,11 @@ class UnsafeEmitter implements ClassEmitter {
     private final Unsafe unsafe;
     private final AccessControlContext accessCtx;
     
-    UnsafeEmitter(ClassLoader classLoader, Unsafe unsafe_) {
+    UnsafeEmitter(ClassLoader classLoader) {
+        this(classLoader, UNSAFE);
+    }
+    
+    private UnsafeEmitter(ClassLoader classLoader, Unsafe unsafe_) {
         classLoaderRef = new WeakReference<ClassLoader>(classLoader);
         unsafe = unsafe_;
         accessCtx = AccessController.getContext();
@@ -88,7 +93,12 @@ class UnsafeEmitter implements ClassEmitter {
         }
     }
     
-    String describe() {
+    @Override
+    public String toString() {
+        return getClass().getName() + "[method=unsafe, supported-packages=<any>, " + describe() + "]"; 
+    }
+    
+    private String describe() {
         ClassLoader classLoader = classLoaderRef.get();
         return "class-loader=" + (null == classLoader ? "<evicted>" : classLoader.toString());
     }
@@ -98,6 +108,17 @@ class UnsafeEmitter implements ClassEmitter {
             return (ClassEmitterException)ex;
         } else {
             return new ClassEmitterException(ex);
+        }
+    }
+    
+    private static final Unsafe UNSAFE;
+    static {
+        try {
+            Field f = Unsafe.class.getDeclaredField("theUnsafe"); // Internal reference
+            f.setAccessible(true);
+            UNSAFE = (Unsafe) f.get(null);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException ex) {
+            throw new RuntimeException(ex);
         }
     }
 }

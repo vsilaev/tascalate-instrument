@@ -44,7 +44,11 @@ class ClassLoaderEmitter implements ClassEmitter {
     private final ClassLoaderAPI api;
     private final AccessControlContext accessCtx;
     
-    ClassLoaderEmitter(ClassLoader classLoader, ClassLoaderAPI classLoaderAPI) {
+    ClassLoaderEmitter(ClassLoader classLoader) {
+        this(classLoader, CLASS_LOADER_API);
+    }
+    
+    private ClassLoaderEmitter(ClassLoader classLoader, ClassLoaderAPI classLoaderAPI) {
         classLoaderRef = new WeakReference<ClassLoader>(classLoader);
         api = classLoaderAPI;
         accessCtx = AccessController.getContext();
@@ -110,7 +114,12 @@ class ClassLoaderEmitter implements ClassEmitter {
         }
     }
     
-    String describe() {
+    @Override
+    public String toString() {
+        return getClass().getName() + "[method=reflection, supported-packages=<any>, " + describe() + "]"; 
+    }
+    
+    private String describe() {
         ClassLoader classLoader = classLoaderRef.get();
         return "v" + api.version() + ", class-loader=" + (null == classLoader ? "<evicted>" : classLoader.toString());
     }
@@ -120,6 +129,30 @@ class ClassLoaderEmitter implements ClassEmitter {
             return (ClassEmitterException)ex;
         } else {
             return new ClassEmitterException(ex);
+        }
+    }
+    
+    
+    private static final ClassLoaderAPI CLASS_LOADER_API;
+    
+    static {
+        String version = System.getProperty("java.version");
+        
+        if (version.startsWith("1.")) {
+            version = version.substring(2, version.indexOf('.', 2));
+        } else {
+            int dot = version.indexOf(".");
+            if (dot > 0) { 
+                version = version.substring(0, dot); 
+            }
+        } 
+        int javaVersion = Integer.parseInt(version);
+        if (javaVersion < 7) {
+            CLASS_LOADER_API = new J6ClassLoaderAPI();
+        } else if (javaVersion < 9) {
+            CLASS_LOADER_API = new J7ClassLoaderAPI();
+        } else {
+            CLASS_LOADER_API = new J9ClassLoaderAPI();
         }
     }
 }

@@ -63,7 +63,7 @@ public abstract class PortableClassFileTransformer implements ClassFileTransform
     }
 
 
-    public abstract byte[] transform(ClassEmitters.Factory emitters,
+    public abstract byte[] transform(ClassEmitter emitter,
                                      Object module,
                                      ClassLoader loader,
                                      String className, Class<?> classBeingRedefined,

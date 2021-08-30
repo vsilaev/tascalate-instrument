@@ -67,8 +67,7 @@
 					<exclude>**/ClassEmitter.class</exclude>
 					<exclude>**/ClassEmitterException.class</exclude>
 					<exclude>**/ClassLoaderAPI.class</exclude>
-					<exclude>**/ClassLoaderEmitters.class</exclude>
-					<exclude>**/EmptyClassEmitters.class</exclude>				
+					<exclude>**/ClassLoaderEmitter.class</exclude>
 					<exclude>**/ReflectionHelper.class</exclude>
 				</excludes>
 			</unpackOptions>
