@@ -1,4 +1,4 @@
-[![Maven Central](https://img.shields.io/maven-central/v/net.tascalate.instrument/net.tascalate.instrument.parent.svg)](https://search.maven.org/artifact/net.tascalate.instrument/net.tascalate.instrument.parent/1.0.1/jar) [![GitHub release](https://img.shields.io/github/release/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/releases/tag/1.0.1) [![license](https://img.shields.io/github/license/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/blob/master/LICENSE)
+[![Maven Central](https://img.shields.io/maven-central/v/net.tascalate.instrument/net.tascalate.instrument.parent.svg)](https://search.maven.org/artifact/net.tascalate.instrument/net.tascalate.instrument.parent/1.1.0/jar) [![GitHub release](https://img.shields.io/github/release/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/releases/tag/1.1.0) [![license](https://img.shields.io/github/license/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/blob/master/LICENSE)
 # Tascalate Instrument
 Utility classes to develop / use Java Agents across different Java versions (1.6 - 11+) - uniformly define classes in agent, attach agents dynamically, etc.
 
@@ -131,12 +131,12 @@ import net.tascalate.instrument.emitter.spi.ClassEmitter;
 import net.tascalate.instrument.emitter.spi.ClassEmitterException;
 import net.tascalate.instrument.emitter.spi.ClassEmitters;
 ...
-ClassEmitters.Factory factory = ClassEmitters.of(null, classLoader); // Java 1.6-1.8
-ClassEmitters.Factory factory = ClassEmitters.of(module, classLoader); // Java 9+
+ClassEmitter emitter = ClassEmitters.of(null, classLoader); // Java 1.6-1.8
+ClassEmitter emitter = ClassEmitters.of(module, classLoader); // Java 9+
 ```
-Obviously, the `module-info` of Java agent must include `requires net.tascalate.instrument.emitter`. Most probably, Java Agent developer will create multi-release JAR with two versions, each differs in a way it constructs `ClassEmiters.Factory`. 
+Obviously, the `module-info` of Java agent must include `requires net.tascalate.instrument.emitter`. Most probably, Java Agent developer will create multi-release JAR with two versions, each differs in a way it constructs `ClassEmiter`. 
 
-To simplify this task, the library includes abstract PortableClassFileTransformer class that already provides construction of the necessary `ClassEmitters.Factory`. The Java Agent developer must extend it and implement the single abstract method:
+To simplify this task, the library includes abstract PortableClassFileTransformer class that already provides construction of the necessary `ClassEmitter`. The Java Agent developer must extend it and implement the single abstract method:
 ```java
 import net.tascalate.instrument.emitter.spi.ClassEmitter;
 import net.tascalate.instrument.emitter.spi.ClassEmitterException;
@@ -145,33 +145,32 @@ import net.tascalate.instrument.emitter.spi.PortableClassFileTransformer;
 
 public class MyClassTransformer extends PortableClassFileTransformer {
     @Override
-    public byte[] transform(ClassEmitters.Factory emitters,
+    public byte[] transform(ClassEmitter emitter,
                             Object module,
                             ClassLoader loader,
                             String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, 
                             byte[] classfileBuffer) throws IllegalClassFormatException {
                             
-        // Define classes using ClassEmitters.Factory emitters 
+        // Define classes using ClassEmitter emitter 
     }
 }
 ```
 
 After this everything will be uniform across all Java versions:
 ```java
-ClassEmitters.Factory factory = ...; // created as above or get via parameter in PortableClassFileTransformer
-ClassEmitter emitter = factory.create(nameOfPackage);
+ClassEmitter emitter = ...; // created as above or get via parameter in PortableClassFileTransformer
 emitter.defineClass(classfileBuffer, protectionDomain);
 ```
 You see that the rest of the code is identical and agnostic to the Java version used. All the burden to support "modular class definitions" is put to the end-user of the library. And to the Tascalate Instrument.Emitter library itself, sure.
 
-Additionally, Tascalate Instrument.Emitter provides a portable way to define classes not only to Java Agent developers, but to the authors of general bytecode modifications libraries, like [ByteBuddy](https://bytebuddy.net/) or [CGLib](https://github.com/cglib/cglib). If you check `ClassEmitters` sources, pay attention to the name of the first parameter:
+Additionally, Tascalate Instrument.Emitter provides a portable way to define classes not only to Java Agent developers, but to the authors of general bytecode modifications libraies, like [ByteBuddy](https://bytebuddy.net/) or [CGLib](https://github.com/cglib/cglib). If you check `ClassEmitters` sources, pay attention to the name of the first parameter:
 ```java
-public static Factory of(Object moduleOrClass, ClassLoader classLoader)
+public static ClassEmitter of(Object moduleOrClass, ClassLoader classLoader)
 ```
-Yes, it accepts either `Class<?>` or `Module`. Or should be null otherwise. Depending on the currently running Java version (and other conditions, like named vs unnamed modules, JVM args), the method will return `ClassEmitters.Factory` that depends either on `Module` (if class is from `@AllowDynamicClasses` module) or for the `ClassLoader` of the class. So the author of the bytecode modification library is isolated from the specifics of Java, and may use portable `ClassEmitters.of(someSuperClass, someSuperClass.getClassLoader())` calls inside own code. And the end-user will adopt the module as necessary and when necessary.
+Yes, it accepts either `Class<?>` or `Module`. Or should be null otherwise. Depending on the currently running Java version (and other conditions, like named vs unnamed modules, JVM args), the method will return `ClassEmitter` that depends either on `Module` (if class is from `@AllowDynamicClasses` module) or for the `ClassLoader` of the class. So the author of the bytecode modification library is isolated from the specifics of Java, and may use portable `ClassEmitters.of(someSuperClass, someSuperClass.getClassLoader())` calls inside own code. And the end-user will adopt the module as necessary and when necessary.
 
-It worth to mention, that developers, who creates own custom class loaders, may implement `ClassEmitters.Factory` interface for the custom class loader. And this factory will take precedence in the factory-resolution algorithm.
+It worth to mention, that developers, who creates own custom class loaders, may implement `ClassEmitter` interface for the custom class loader. And this emitter will take precedence in the emitter-resolution algorithm.
 
 To use a library with Java 8 you have to add the single dependency:
 ```xml
