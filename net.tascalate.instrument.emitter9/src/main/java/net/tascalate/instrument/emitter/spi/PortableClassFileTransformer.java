@@ -57,7 +57,7 @@ public abstract class PortableClassFileTransformer implements ClassFileTransform
                                   byte[] classfileBuffer) throws IllegalClassFormatException {
 
         return transform(
-            ClassEmitters.of(module, loader, false), module, loader, 
+            ClassEmitters.of(module, loader, true), module, loader, 
             className, classBeingRedefined, protectionDomain, classfileBuffer
         );
     }

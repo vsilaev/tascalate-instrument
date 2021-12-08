@@ -64,12 +64,29 @@
 				<excludes>
 					<exclude>META-INF/**</exclude>
 					<exclude>**/AbstractOpenPackage.class</exclude>
+					<!-- This one will be copied to the main class root to not shock IDE-s like Eclipse -->
+					<exclude>**/AllowDynamicClasses.class</exclude>
 					<exclude>**/ClassEmitter.class</exclude>
 					<exclude>**/ClassEmitterException.class</exclude>
 					<exclude>**/ClassLoaderAPI.class</exclude>
 					<exclude>**/ClassLoaderEmitter.class</exclude>
 					<exclude>**/ReflectionHelper.class</exclude>
 				</excludes>
+			</unpackOptions>
+			<scope>runtime</scope>
+			<useTransitiveDependencies>false</useTransitiveDependencies>
+		</dependencySet>
+		<dependencySet>
+			<includes>
+				<include>*:net.tascalate.instrument.emitter9</include>
+			</includes>
+			<outputDirectory>/</outputDirectory>
+			<useProjectArtifact>true</useProjectArtifact>
+			<unpack>true</unpack>
+			<unpackOptions>
+				<includes>
+					<include>**/AllowDynamicClasses.class</include>
+				</includes>
 			</unpackOptions>
 			<scope>runtime</scope>
 			<useTransitiveDependencies>false</useTransitiveDependencies>

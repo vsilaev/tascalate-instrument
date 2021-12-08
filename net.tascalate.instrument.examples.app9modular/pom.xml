@@ -16,22 +16,10 @@
 	<name>Tascalate Instrument / Examples / Java-9 Modular APP</name>
 
 	<dependencies>
-		<!-- Runtime-only dependency on multi-release *.spi *, scope RUNTIME   -->
-		<!-- It's impossible to compile with multi-release JAR, hence 2 deps   -->
-		<!-- Also it should be first to be the first on module path in Eclipse -->
 		<dependency>
 			<groupId>net.tascalate.instrument</groupId>
 			<artifactId>net.tascalate.instrument.emitter</artifactId>
 			<version>${project.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<!-- Compile-only dependency on *.spi9 *, scope PROVIDED -->
-		<dependency>
-			<groupId>net.tascalate.instrument</groupId>
-			<artifactId>net.tascalate.instrument.emitter9</artifactId>
-			<version>${project.version}</version>
-			<scope>provided</scope>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>net.tascalate.instrument</groupId>
