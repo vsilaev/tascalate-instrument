@@ -33,9 +33,35 @@ package net.tascalate.instrument.emitter.spi;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
+import java.util.Collections;
 
 public abstract class PortableClassFileTransformer implements ClassFileTransformer {
+    
+    @FunctionalInterface
+    public static interface ClassEmitterFactory {
+        ClassEmitter create(boolean mandatory);
+    }
+    
+    private final OpenPackageAction openPackage;
+    
+    protected PortableClassFileTransformer(Instrumentation instrumentation) {
+        this.openPackage = new OpenPackageAction() {
+            @Override
+            boolean run(String packageName, Module packageModule, Module accessorModule) {
+                instrumentation.redefineModule(
+                    packageModule, 
+                    Collections.emptySet(), 
+                    Collections.emptyMap(), 
+                    Collections.singletonMap(packageName, Collections.singleton(accessorModule)), 
+                    Collections.emptySet(), 
+                    Collections.emptyMap()
+                );
+                return true;
+            }
+        };
+    }
 
     @Override
     public final byte[] transform(ClassLoader loader, 
@@ -57,18 +83,18 @@ public abstract class PortableClassFileTransformer implements ClassFileTransform
                                   byte[] classfileBuffer) throws IllegalClassFormatException {
 
         return transform(
-            ClassEmitters.of(module, loader, true), module, loader, 
+            mandatory -> ClassEmitters.of(module, loader, mandatory, openPackage), module, loader, 
             className, classBeingRedefined, protectionDomain, classfileBuffer
         );
     }
 
 
-    public abstract byte[] transform(ClassEmitter emitter,
-                                     Object module,
-                                     ClassLoader loader,
-                                     String className, Class<?> classBeingRedefined,
-                                     ProtectionDomain protectionDomain, 
-                                     byte[] classfileBuffer) throws IllegalClassFormatException;
+    protected abstract byte[] transform(ClassEmitterFactory emitterFactory,
+                                        Object module,
+                                        ClassLoader loader,
+                                        String className, Class<?> classBeingRedefined,
+                                        ProtectionDomain protectionDomain, 
+                                        byte[] classfileBuffer) throws IllegalClassFormatException;
 
     public static byte[] callTransformer(@SuppressWarnings("exports") ClassFileTransformer transformer,
                                          Object module,

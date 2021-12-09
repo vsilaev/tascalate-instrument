@@ -33,9 +33,32 @@ package net.tascalate.instrument.emitter.spi;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public abstract class PortableClassFileTransformer implements ClassFileTransformer {
+    
+    public static interface ClassEmitterFactory {
+        ClassEmitter create(boolean mandatory);
+    }
+    
+    private static class ClassEmitterFactoryImpl implements ClassEmitterFactory {
+        private final ClassLoader loader;
+        public ClassEmitterFactoryImpl(ClassLoader loader) {
+            this.loader = loader;
+        }
+        
+        @Override
+        public ClassEmitter create(boolean mandatory) {
+            return ClassEmitters.of(null, loader, mandatory);
+        }        
+    }
+    
+    protected PortableClassFileTransformer(Instrumentation instrumentation) {
+        
+    }
 
     @Override
     public final byte[] transform(ClassLoader loader, 
@@ -43,17 +66,17 @@ public abstract class PortableClassFileTransformer implements ClassFileTransform
                                   ProtectionDomain protectionDomain, 
                                   byte[] classfileBuffer) throws IllegalClassFormatException {
         return transform(
-            ClassEmitters.of(null, loader, true), null, loader, 
+            resolveClassEmitterFactory(loader), null, loader, 
             className, classBeingRedefined, protectionDomain, classfileBuffer
         );
     }
     
-    public abstract byte[] transform(ClassEmitter emitter,
-                                     Object module,
-                                     ClassLoader loader,
-                                     String className, Class<?> classBeingRedefined,
-                                     ProtectionDomain protectionDomain, 
-                                     byte[] classfileBuffer) throws IllegalClassFormatException;
+    protected abstract byte[] transform(ClassEmitterFactory emitterFactory,
+                                        Object module,
+                                        ClassLoader loader,
+                                        String className, Class<?> classBeingRedefined,
+                                        ProtectionDomain protectionDomain, 
+                                        byte[] classfileBuffer) throws IllegalClassFormatException;
 
     public static byte[] callTransformer(ClassFileTransformer transformer,
                                          Object module,
@@ -66,5 +89,18 @@ public abstract class PortableClassFileTransformer implements ClassFileTransform
             throw new IllegalArgumentException("Module parameter for Java versions below 9 should be null");
         }
         return transformer.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
+    }
+    
+    
+    private static final Map<ClassLoader, ClassEmitterFactory> CLASS_EMITTER_FACTORY_BY_LOADER = new WeakHashMap<ClassLoader, PortableClassFileTransformer.ClassEmitterFactory>();
+    private static ClassEmitterFactory resolveClassEmitterFactory(ClassLoader loader) {
+        synchronized (CLASS_EMITTER_FACTORY_BY_LOADER) {
+            ClassEmitterFactory result = CLASS_EMITTER_FACTORY_BY_LOADER.get(loader);
+            if (null == result) {
+                result = new ClassEmitterFactoryImpl(loader);
+                CLASS_EMITTER_FACTORY_BY_LOADER.put(loader, result);
+            }
+            return result;
+        }
     }
 }

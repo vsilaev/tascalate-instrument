@@ -71,6 +71,7 @@
 					<exclude>**/ClassLoaderAPI.class</exclude>
 					<exclude>**/ClassLoaderEmitter.class</exclude>
 					<exclude>**/ReflectionHelper.class</exclude>
+					<exclude>**/PortableClassFileTransformer$ClassEmitterFactory.class</exclude>
 				</excludes>
 			</unpackOptions>
 			<scope>runtime</scope>

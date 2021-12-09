@@ -50,15 +50,17 @@ class ModuleClassEmitter implements ClassEmitter {
 
     private final WeakReference<Module> targetModule;
     private final List<WeakReference<Class<?>>> packageClasses;
+    private final OpenPackageAction openPackage;
     private final MethodHandles.Lookup selfLookup = MethodHandles.lookup();
     private final Map<String, ClassEmitter> cachedDefiners = new HashMap<>();
 
-    ModuleClassEmitter(Module targetModule, Class<?>[] packageClasses) {
+    ModuleClassEmitter(Module targetModule, Class<?>[] packageClasses, OpenPackageAction openPackage) {
         this.targetModule = new WeakReference<>(targetModule);
         // TODO: is keeping hard references is ok / mandatory?
         this.packageClasses = Stream.of(packageClasses)
                                     .map(ModuleClassEmitter::weakReferenceOf)
                                     .collect(Collectors.toList());
+        this.openPackage = openPackage;
     }
     
     @Override
@@ -112,27 +114,28 @@ class ModuleClassEmitter implements ClassEmitter {
             }
             if (packageClass.getPackageName().equals(packageName)) {
                 // Sanity check first to help app developer follow our rules
-                if (!target.isOpen(packageName, self)) {
+                if (target.isOpen(packageName, self) || openPackage.run(packageName, target, self)) {
+                    // Allows concrete implementations of AbstractOpenPackage
+                    // to have [package-]private constructor
+                    try {
+                        MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(packageClass, selfLookup);
+                        return (bytes, domain) -> {
+                            try {
+                                return lookup.defineClass(bytes);
+                            } catch (IllegalAccessException e) {
+                                throw new ClassEmitterException(e);
+                            }
+                        };
+                    } catch (IllegalAccessException e) {
+                        throw new ClassEmitterException(e);
+                    }
+                } else {
                     throw new IllegalStateException(
                         "Module " + target.getName() + " shows an intent to support instrumentation " +
                         "(annotation @" + AllowDynamicClasses.class.getSimpleName() + " is present " +
                         "with " + AbstractOpenPackage.class.getSimpleName() + " = " + packageClass.getName() + "), " +
                         "however package " + packageName + " is not open for module " + self.getName()
                     );
-                }
-                // Allows concrete implementations of AbstractOpenPackage
-                // to have [package-]private constructor
-                try {
-                    MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(packageClass, selfLookup);
-                    return (bytes, domain) -> {
-                        try {
-                            return lookup.defineClass(bytes);
-                        } catch (IllegalAccessException e) {
-                            throw new ClassEmitterException(e);
-                        }
-                    };
-                } catch (IllegalAccessException e) {
-                    throw new ClassEmitterException(e);
                 }
             }
         }

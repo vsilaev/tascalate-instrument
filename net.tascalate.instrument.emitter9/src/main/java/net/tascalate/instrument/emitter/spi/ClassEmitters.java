@@ -101,7 +101,7 @@ public final class ClassEmitters {
                 return null;
             }
         }
-        return of(module, settings, null);
+        return of(module, settings, null, OpenPackageAction.NOP);
     }
     
     public static ClassEmitter of(Object moduleOrClass, ClassLoader classLoader) {
@@ -109,6 +109,13 @@ public final class ClassEmitters {
     }
     
     public static ClassEmitter of(Object moduleOrClass, ClassLoader classLoader, boolean mandatory) {
+        return of(moduleOrClass, classLoader, mandatory, OpenPackageAction.NOP);
+    }
+    
+    static ClassEmitter of(Object moduleOrClass, 
+                           ClassLoader classLoader, 
+                           boolean mandatory,
+                           OpenPackageAction openPackage) {
         if (moduleOrClass instanceof Class) {
             Class<?> clazz = (Class<?>)moduleOrClass;
             ClassLoader altClassLoader = clazz.getClassLoader();
@@ -119,18 +126,19 @@ public final class ClassEmitters {
                 AllowDynamicClasses settings = module.getAnnotation(AllowDynamicClasses.class);
                 if (settings != null) {
                     // Module is configured
-                    return of(module, settings, clazz);
+                    return of(module, settings, clazz, openPackage);
                 } else {
                     // Non-configured module
                     // The best we can do is a single-package ModuleClassEmitters
-                    if (module.isOpen(clazz.getPackageName(), SELF_MODULE)) {
+                    String packageName = clazz.getPackageName();
+                    if (module.isOpen(packageName, SELF_MODULE) || openPackage.run(packageName, module, SELF_MODULE)) {
                         if (!SELF_MODULE.canRead(module)) {
                             // Obviously, we unaware initially of all modules that requires
                             // dynamic class definitions.
                             // So it's necessary to add "read" access dynamically
                             SELF_MODULE.addReads(module);
                         }
-                        return new ModuleClassEmitter(module, new Class[] {clazz});
+                        return new ModuleClassEmitter(module, new Class[] {clazz}, OpenPackageAction.NOP /* already opened */);
                     } else {
                         // In fact this will throw exception that explains everything
                         return of(classLoader, mandatory);
@@ -144,7 +152,7 @@ public final class ClassEmitters {
                 // Module is configured
                 // TODO what if classLoader supplied is Factory?
                 // what scenario should win?
-                return of(module, settings, null);
+                return of(module, settings, null, openPackage);
             } else {
                 // Non-configured module
                 // try our best with class loaders
@@ -161,7 +169,10 @@ public final class ClassEmitters {
         }
     }
     
-    private static ClassEmitter of(Module module, AllowDynamicClasses settings, Class<?> extraClass) {
+    private static ClassEmitter of(Module module, 
+                                   AllowDynamicClasses settings, 
+                                   Class<?> extraClass,
+                                   OpenPackageAction openPackage) {
         Class<? extends AbstractOpenPackage>[] settingsClasses = settings.value();
         Class<?>[] packageClasses;
         if (extraClass == null) {
@@ -186,7 +197,7 @@ public final class ClassEmitters {
             SELF_MODULE.addReads(module);
         }
 
-        return new ModuleClassEmitter(module, packageClasses);        
+        return new ModuleClassEmitter(module, packageClasses, openPackage);        
     }
     
     private static boolean mayUseClassLoaderEmitters(ClassLoader classLoader) {
