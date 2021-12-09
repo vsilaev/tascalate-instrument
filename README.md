@@ -1,6 +1,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/net.tascalate.instrument/net.tascalate.instrument.parent.svg)](https://search.maven.org/artifact/net.tascalate.instrument/net.tascalate.instrument.parent/1.1.0/jar) [![GitHub release](https://img.shields.io/github/release/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/releases/tag/1.1.0) [![license](https://img.shields.io/github/license/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/blob/master/LICENSE)
 # Tascalate Instrument
-Utility classes to develop / use Java Agents across different Java versions (1.6 - 11+) - uniformly define classes in agent, attach agents dynamically, etc.
+Utility classes to develop / use Java Agents across different Java versions (1.6 - 17+) - uniformly define classes in agent, attach agents dynamically, etc.
 
 Currently there are two functional areas covered by the library: **attach**-ing Java Agents dynamically and **emit**-ting bytecode dynamically. Let's review them in alphabetical order.
 
@@ -22,7 +22,7 @@ All in all, Tascalate Instrument Attach provides a way to attach Java Agents dyn
     <version>#actual-version#</version>
 </dependency>
 ```
-The library is a multi-release JAR that works with Java 1.6 - 11.
+The library is a multi-release JAR that works with Java 1.6 - 17.
 Next, in your code you are able to do the following:
 ```
 import net.tascalate.instrument.attach.api.AgentLoader;
@@ -63,7 +63,7 @@ module net.tascalate.instrument.examples.app {
     requires com.sun.jna;
 }
 ```
-No changes to the code that invokes `AgentLoaders.attach(...)` or `AgentLoaders.getDefault().attach(...)` are required! And the code may still be used with all supported Java versions (1.6 - 11+).
+No changes to the code that invokes `AgentLoaders.attach(...)` or `AgentLoaders.getDefault().attach(...)` are required! And the code may still be used with all supported Java versions (1.6 - 17+).
 
 Footnote. I'm aware that similar functionality exists in several libraries, like [ByteBuddy](https://bytebuddy.net/). But it's either tied very hard to the library itself, or requires some extra dependencies, so I decided to roll-out my own solution with the only and _optional_ dependency to JNA. 
 
@@ -172,7 +172,7 @@ Yes, it accepts either `Class<?>` or `Module`. Or should be null otherwise. Depe
 
 It worth to mention, that developers, who creates own custom class loaders, may implement `ClassEmitter` interface for the custom class loader. And this emitter will take precedence in the emitter-resolution algorithm.
 
-To use a library with Java 8 you have to add the single dependency:
+To use the library, you have to add the single dependency:
 ```xml
 <dependency>
     <groupId>net.tascalate.instrument</groupId>
@@ -180,22 +180,3 @@ To use a library with Java 8 you have to add the single dependency:
     <version>#actual-version#</version>
 </dependency>
 ```
-For Java 9 and above two dependencies are necessary (with exact scope rules):
-```xml
-<dependency>
-    <groupId>net.tascalate.instrument</groupId>
-    <artifactId>net.tascalate.instrument.emitter</artifactId>
-    <version>#actual-version#</version>
-    <scope>runtime</scope>
-</dependency>
-<!-- Compile-only dependency on *.spi9 *, scope PROVIDED and no propagation -->
-<dependency>
-    <groupId>net.tascalate.instrument</groupId>
-    <artifactId>net.tascalate.instrument.emitter9</artifactId>
-    <version>#actual-version#</version>
-    <scope>provided</scope>
-    <optional>true</optional>
-</dependency>
-```
-
-These are unfortunate consequences how mutli-release JAR-s are supported at build-time: Java compiler doesn't see classes these exist only for Java 9 and above (placed under META-INF/versions/9 path in JAR) but do not exist at "default" (root) location.
