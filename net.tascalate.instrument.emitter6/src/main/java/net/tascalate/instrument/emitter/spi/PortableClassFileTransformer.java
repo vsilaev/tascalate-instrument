@@ -40,8 +40,8 @@ import java.util.WeakHashMap;
 
 public abstract class PortableClassFileTransformer implements ClassFileTransformer {
     
-    abstract protected static class ClassEmitterFactory {
-        abstract public ClassEmitter create(boolean mandatory);
+    protected interface ClassEmitterFactory {
+        public ClassEmitter create(boolean mandatory);
     }
     
     protected PortableClassFileTransformer(Instrumentation instrumentation) {
