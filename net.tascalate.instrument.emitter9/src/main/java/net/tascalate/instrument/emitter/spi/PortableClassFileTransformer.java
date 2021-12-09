@@ -39,9 +39,8 @@ import java.util.Collections;
 
 public abstract class PortableClassFileTransformer implements ClassFileTransformer {
     
-    @FunctionalInterface
-    public static interface ClassEmitterFactory {
-        ClassEmitter create(boolean mandatory);
+    abstract protected static class ClassEmitterFactory {
+        abstract public ClassEmitter create(boolean mandatory);
     }
     
     private final OpenPackageAction openPackage;
@@ -82,8 +81,14 @@ public abstract class PortableClassFileTransformer implements ClassFileTransform
                                   ProtectionDomain protectionDomain, 
                                   byte[] classfileBuffer) throws IllegalClassFormatException {
 
+        ClassEmitterFactory classEmitterFactory = new ClassEmitterFactory() {
+            @Override
+            public ClassEmitter create(boolean mandatory) {
+                return ClassEmitters.of(module, loader, mandatory, openPackage);
+            }
+        };
         return transform(
-            mandatory -> ClassEmitters.of(module, loader, mandatory, openPackage), module, loader, 
+            classEmitterFactory, module, loader, 
             className, classBeingRedefined, protectionDomain, classfileBuffer
         );
     }

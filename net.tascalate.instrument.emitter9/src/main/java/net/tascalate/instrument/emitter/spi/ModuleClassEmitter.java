@@ -52,11 +52,10 @@ class ModuleClassEmitter implements ClassEmitter {
     private final List<WeakReference<Class<?>>> packageClasses;
     private final OpenPackageAction openPackage;
     private final MethodHandles.Lookup selfLookup = MethodHandles.lookup();
-    private final Map<String, ClassEmitter> cachedDefiners = new HashMap<>();
+    private final Map<String, WeakReference<ClassEmitter>> cachedDefinerRefs = new HashMap<>();
 
     ModuleClassEmitter(Module targetModule, Class<?>[] packageClasses, OpenPackageAction openPackage) {
         this.targetModule = new WeakReference<>(targetModule);
-        // TODO: is keeping hard references is ok / mandatory?
         this.packageClasses = Stream.of(packageClasses)
                                     .map(ModuleClassEmitter::weakReferenceOf)
                                     .collect(Collectors.toList());
@@ -76,14 +75,17 @@ class ModuleClassEmitter implements ClassEmitter {
 
     private ClassEmitter create(String packageName) throws ClassEmitterException {
         ClassEmitter definer;
-        synchronized (cachedDefiners) {
-            definer = cachedDefiners.get(packageName);
+        synchronized (cachedDefinerRefs) {
+            WeakReference<ClassEmitter> definerRef = cachedDefinerRefs.get(packageName);
+            definer = definerRef == null ? null : definerRef.get();
             if (null == definer) {
                 definer = lookupInternal(packageName);
+                if (null != definer) {
+                    cachedDefinerRefs.put(packageName, new WeakReference<>(definer));
+                }
             }
-            cachedDefiners.put(packageName, definer);
         }
-        return definer == NO_DEFINER ? null : definer;
+        return definer;
     }
     
     @Override
@@ -109,7 +111,7 @@ class ModuleClassEmitter implements ClassEmitter {
         for (WeakReference<Class<?>> packageClassRef : packageClasses) {
             Class<?> packageClass = packageClassRef.get();
             if (null == packageClass) {
-                // Or exception?
+                // May be unloaded
                 continue;
             }
             if (packageClass.getPackageName().equals(packageName)) {
@@ -139,13 +141,11 @@ class ModuleClassEmitter implements ClassEmitter {
                 }
             }
         }
-        return NO_DEFINER;
+        return null;
     }
     
     private static <T> WeakReference<Class<?>> weakReferenceOf(Class<T> cls) {
         Class<?> casted = cls;
         return new WeakReference<>(casted);
     }
-
-    private static final ClassEmitter NO_DEFINER = (bytes, domain) -> null;
 }

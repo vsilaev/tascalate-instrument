@@ -40,20 +40,8 @@ import java.util.WeakHashMap;
 
 public abstract class PortableClassFileTransformer implements ClassFileTransformer {
     
-    public static interface ClassEmitterFactory {
-        ClassEmitter create(boolean mandatory);
-    }
-    
-    private static class ClassEmitterFactoryImpl implements ClassEmitterFactory {
-        private final ClassLoader loader;
-        public ClassEmitterFactoryImpl(ClassLoader loader) {
-            this.loader = loader;
-        }
-        
-        @Override
-        public ClassEmitter create(boolean mandatory) {
-            return ClassEmitters.of(null, loader, mandatory);
-        }        
+    abstract protected static class ClassEmitterFactory {
+        abstract public ClassEmitter create(boolean mandatory);
     }
     
     protected PortableClassFileTransformer(Instrumentation instrumentation) {
@@ -93,11 +81,16 @@ public abstract class PortableClassFileTransformer implements ClassFileTransform
     
     
     private static final Map<ClassLoader, ClassEmitterFactory> CLASS_EMITTER_FACTORY_BY_LOADER = new WeakHashMap<ClassLoader, PortableClassFileTransformer.ClassEmitterFactory>();
-    private static ClassEmitterFactory resolveClassEmitterFactory(ClassLoader loader) {
+    private static ClassEmitterFactory resolveClassEmitterFactory(final ClassLoader loader) {
         synchronized (CLASS_EMITTER_FACTORY_BY_LOADER) {
             ClassEmitterFactory result = CLASS_EMITTER_FACTORY_BY_LOADER.get(loader);
             if (null == result) {
-                result = new ClassEmitterFactoryImpl(loader);
+                result = new ClassEmitterFactory() {
+                    @Override
+                    public ClassEmitter create(boolean mandatory) {
+                        return ClassEmitters.of(null, loader, mandatory);
+                    }
+                };
                 CLASS_EMITTER_FACTORY_BY_LOADER.put(loader, result);
             }
             return result;
