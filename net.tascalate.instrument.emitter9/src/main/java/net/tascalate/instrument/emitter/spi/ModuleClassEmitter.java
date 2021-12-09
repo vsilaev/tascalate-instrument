@@ -52,7 +52,7 @@ class ModuleClassEmitter implements ClassEmitter {
     private final List<WeakReference<Class<?>>> packageClasses;
     private final OpenPackageAction openPackage;
     private final MethodHandles.Lookup selfLookup = MethodHandles.lookup();
-    private final Map<String, WeakReference<ClassEmitter>> cachedDefinerRefs = new HashMap<>();
+    private final Map<String, WeakReference<MethodHandles.Lookup>> cachedLookupRefs = new HashMap<>();
 
     ModuleClassEmitter(Module targetModule, Class<?>[] packageClasses, OpenPackageAction openPackage) {
         this.targetModule = new WeakReference<>(targetModule);
@@ -74,18 +74,18 @@ class ModuleClassEmitter implements ClassEmitter {
     }
 
     private ClassEmitter create(String packageName) throws ClassEmitterException {
-        ClassEmitter definer;
-        synchronized (cachedDefinerRefs) {
-            WeakReference<ClassEmitter> definerRef = cachedDefinerRefs.get(packageName);
-            definer = definerRef == null ? null : definerRef.get();
-            if (null == definer) {
-                definer = lookupInternal(packageName);
-                if (null != definer) {
-                    cachedDefinerRefs.put(packageName, new WeakReference<>(definer));
+        MethodHandles.Lookup lookup;
+        synchronized (cachedLookupRefs) {
+            WeakReference<MethodHandles.Lookup> lookupRef = cachedLookupRefs.get(packageName);
+            lookup = lookupRef == null ? null : lookupRef.get();
+            if (null == lookup) {
+                lookup = lookupInternal(packageName);
+                if (null != lookup) {
+                    cachedLookupRefs.put(packageName, new WeakReference<>(lookup));
                 }
             }
         }
-        return definer;
+        return toClassEmitter(lookup);
     }
     
     @Override
@@ -102,7 +102,7 @@ class ModuleClassEmitter implements ClassEmitter {
                                       ", module="  + moduleName + "]"; 
     }
 
-    private ClassEmitter lookupInternal(String packageName) throws ClassEmitterException {
+    private MethodHandles.Lookup lookupInternal(String packageName) throws ClassEmitterException {
         Module target = targetModule.get();
         Module self   = getClass().getModule();
         if (null == target) {
@@ -120,14 +120,7 @@ class ModuleClassEmitter implements ClassEmitter {
                     // Allows concrete implementations of AbstractOpenPackage
                     // to have [package-]private constructor
                     try {
-                        MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(packageClass, selfLookup);
-                        return (bytes, domain) -> {
-                            try {
-                                return lookup.defineClass(bytes);
-                            } catch (IllegalAccessException e) {
-                                throw new ClassEmitterException(e);
-                            }
-                        };
+                        return MethodHandles.privateLookupIn(packageClass, selfLookup);
                     } catch (IllegalAccessException e) {
                         throw new ClassEmitterException(e);
                     }
@@ -142,6 +135,20 @@ class ModuleClassEmitter implements ClassEmitter {
             }
         }
         return null;
+    }
+    
+    private static ClassEmitter toClassEmitter(MethodHandles.Lookup lookup) {
+        if (null == lookup) {
+            return null;
+        } else {
+            return (bytes, domain) -> {
+                try {
+                    return lookup.defineClass(bytes);
+                } catch (IllegalAccessException e) {
+                    throw new ClassEmitterException(e);
+                }
+            }; 
+        }
     }
     
     private static <T> WeakReference<Class<?>> weakReferenceOf(Class<T> cls) {
