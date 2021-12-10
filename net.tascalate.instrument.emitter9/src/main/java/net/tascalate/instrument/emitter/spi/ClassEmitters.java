@@ -31,6 +31,8 @@
  */
 package net.tascalate.instrument.emitter.spi;
 
+import static net.tascalate.instrument.emitter.spi.ReflectionHelper.getBestClassLoader;
+
 import java.util.Objects;
 
 import net.tascalate.instrument.emitter.api.AbstractOpenPackage;
@@ -46,64 +48,29 @@ public final class ClassEmitters {
         return ReflectionHelper.getClassName(classBytes);
     }
     
-    public static String packageNameOf(byte[] classBytes) {
-        return ReflectionHelper.packageNameOf(classNameOf(classBytes));
-    }
-    
     public static ClassEmitter of(ClassLoader classLoader) {
         return of(classLoader, true);
     }
 
     public static ClassEmitter of(ClassLoader classLoader, boolean mandatory) {
-        Objects.requireNonNull(classLoader);
-        if (classLoader instanceof ClassEmitter) {
-            // Custom class loader that defines method explicitly
-            return (ClassEmitter)classLoader;
-        } else if (CLASS_LOADER_EMITTERS_SUPPORTED) {
-            // Good-old Java 8 class loader reflection
-            // if Java 9 is started with option
-            // --add-opens java.base/java.lang=net.tascalate.instrument.emitter
-            // or to all unnamed modules and we are shaded inside unnamed module
-            return new ClassLoaderEmitter(classLoader);
-        } else if (UnsafeSupport.isSupported()) {
-            // Short flirt with Java 9 / 10 
-            return new UnsafeEmitter(classLoader);
-        } else {
-            // Out of luck on this path
-            if (mandatory) {
-                throw new IllegalStateException(
-                    "ClassLoader-based injection is unavailable.\n" +
-                    "Please either start Java with command-line option --add-opens java.base/java.lang=" +
-                    (SELF_MODULE.isNamed() ? SELF_MODULE.getName() : "ALL-UNNAMED") + "\n" +
-                    "or configure your module with @" + AllowDynamicClasses.class.getName() + " annotation and \n" +
-                    "use " + ClassEmitters.class.getName() + ".of(moduleOrClass, classLoader) method."
-                );
-            } else {
-                return null;
-            }
-        }
-    }
-
-    public static ClassEmitter of(Module module) {
-        return of(module, true);
-    }
-
-    public static ClassEmitter of(Module module, boolean mandatory) {
-        Objects.requireNonNull(module);
-        AllowDynamicClasses settings = module.getAnnotation(AllowDynamicClasses.class);
-        if (null == settings) {
-            if (mandatory) {
-                throw new IllegalStateException(
-                    "Module " + module.getName() + " does not allow defying dynamic classes " + 
-                    "(not annotated with " + AllowDynamicClasses.class.getName() + ")"
-                );
-            } else {
-                return null;
-            }
-        }
-        return of(module, settings, null, OpenPackageAction.NOP);
+        if (null == classLoader) {
+            throw new IllegalArgumentException("\"classLoader\" may not be null");
+        }        
+        return byClassLoader(classLoader, mandatory, null);
     }
     
+    public static ClassEmitter of(Object moduleOrClass) {
+        return of(moduleOrClass, true);
+    }
+
+    public static ClassEmitter of(Object moduleOrClass, boolean mandatory) {
+        if (null == moduleOrClass) {
+            throw new IllegalArgumentException("\"moduleOrClass\" may not be null");
+        }
+        return of(moduleOrClass, null, mandatory, OpenPackageAction.NOP);
+    }
+    
+    /*
     public static ClassEmitter of(Object moduleOrClass, ClassLoader classLoader) {
         return of(moduleOrClass, classLoader, true);
     }
@@ -111,6 +78,7 @@ public final class ClassEmitters {
     public static ClassEmitter of(Object moduleOrClass, ClassLoader classLoader, boolean mandatory) {
         return of(moduleOrClass, classLoader, mandatory, OpenPackageAction.NOP);
     }
+    */
     
     static ClassEmitter of(Object moduleOrClass, 
                            ClassLoader classLoader, 
@@ -118,15 +86,15 @@ public final class ClassEmitters {
                            OpenPackageAction openPackage) {
         if (moduleOrClass instanceof Class) {
             Class<?> clazz = (Class<?>)moduleOrClass;
-            ClassLoader altClassLoader = clazz.getClassLoader();
-            if (mayUseClassLoaderEmitters(classLoader) || (altClassLoader instanceof ClassEmitter)) {
-                return ClassEmitters.of(ReflectionHelper.getBestClassLoader(altClassLoader, classLoader), mandatory);
+            ClassLoader bestClassLoader = getBestClassLoader(clazz.getClassLoader(), classLoader);
+            if (mayUseClassLoaderEmitters() || bestClassLoader instanceof ClassEmitter) {
+                return byClassLoader(getBestClassLoader(bestClassLoader, classLoader), mandatory, null);
             } else {
                 Module module = clazz.getModule();
                 AllowDynamicClasses settings = module.getAnnotation(AllowDynamicClasses.class);
                 if (settings != null) {
                     // Module is configured
-                    return of(module, settings, clazz, openPackage);
+                    return byModule(module, settings, clazz, openPackage);
                 } else {
                     // Non-configured module
                     // The best we can do is a single-package ModuleClassEmitters
@@ -141,7 +109,12 @@ public final class ClassEmitters {
                         return new ModuleClassEmitter(module, new Class[] {clazz}, OpenPackageAction.NOP /* already opened */);
                     } else {
                         // In fact this will throw exception that explains everything
-                        return of(classLoader, mandatory);
+                        return byClassLoader(
+                            bestClassLoader, mandatory,
+                            "or open package " + ReflectionHelper.packageNameOf(clazz.getName()) + " " + 
+                            "to " + (SELF_MODULE.isNamed() ? SELF_MODULE.getName() : "ALL-UNNAMED") + " module\n" +
+                            "(if emitting bytecode to this package is intended)"
+                        );
                     }
                 }
             }
@@ -152,11 +125,11 @@ public final class ClassEmitters {
                 // Module is configured
                 // TODO what if classLoader supplied is Factory?
                 // what scenario should win?
-                return of(module, settings, null, openPackage);
+                return byModule(module, settings, null, openPackage);
             } else {
                 // Non-configured module
                 // try our best with class loaders
-                return of(ReflectionHelper.getBestClassLoader(module.getClassLoader(), classLoader), mandatory);
+                return byClassLoader(getBestClassLoader(module.getClassLoader(), classLoader), mandatory, null);
             }
         } else if (null != moduleOrClass) {
             throw new IllegalArgumentException(
@@ -165,14 +138,14 @@ public final class ClassEmitters {
                 " or instance of " + Module.class.getName()
             );
         } else {
-            return ClassEmitters.of(classLoader, mandatory);
+            return byClassLoader(classLoader, mandatory, null);
         }
     }
     
-    private static ClassEmitter of(Module module, 
-                                   AllowDynamicClasses settings, 
-                                   Class<?> extraClass,
-                                   OpenPackageAction openPackage) {
+    private static ClassEmitter byModule(Module module, 
+                                         AllowDynamicClasses settings, 
+                                         Class<?> extraClass,
+                                         OpenPackageAction openPackage) {
         Class<? extends AbstractOpenPackage>[] settingsClasses = settings.value();
         Class<?>[] packageClasses;
         if (extraClass == null) {
@@ -200,26 +173,55 @@ public final class ClassEmitters {
         return new ModuleClassEmitter(module, packageClasses, openPackage);        
     }
     
-    private static boolean mayUseClassLoaderEmitters(ClassLoader classLoader) {
-        return (classLoader instanceof ClassEmitter) ||
-               CLASS_LOADER_EMITTERS_SUPPORTED  ||
-               UnsafeSupport.isSupported();
+    private static ClassEmitter byClassLoader(ClassLoader classLoader, boolean mandatory, String extraMessage) {
+        Objects.requireNonNull(classLoader);
+        if (classLoader instanceof ClassEmitter) {
+            // Custom class loader that defines method explicitly
+            return (ClassEmitter)classLoader;
+        } else if (CLASS_LOADER_EMITTERS_SUPPORTED) {
+            // Good-old Java 8 class loader reflection
+            // if Java 9 is started with option
+            // --add-opens java.base/java.lang=net.tascalate.instrument.emitter
+            // or to all unnamed modules and we are shaded inside unnamed module
+            return new ClassLoaderEmitter(classLoader);
+        } else if (UnsafeSupport.isSupported()) {
+            // Short flirt with Java 9 / 10 
+            return new UnsafeEmitter(classLoader);
+        } else {
+            // Out of luck on this path
+            if (mandatory) {
+                String option;
+                if (null != extraMessage) {
+                    option = extraMessage;
+                } else {
+                    option = 
+                    "or configure your module with @" + AllowDynamicClasses.class.getName() + " annotation and \n" +
+                    "use " + ClassEmitters.class.getName() + ".of(...) method overload for modular applications.";
+                }
+                throw new IllegalStateException(
+                    "ClassLoader-based injection is unavailable.\n" +
+                    "Please either start Java with command-line option --add-opens java.base/java.lang=" +
+                    (SELF_MODULE.isNamed() ? SELF_MODULE.getName() : "ALL-UNNAMED") + "\n" +
+                    option
+                );
+            } else {
+                return null;
+            }
+        }
+    }    
+    
+    private static boolean mayUseClassLoaderEmitters() {
+        return CLASS_LOADER_EMITTERS_SUPPORTED || UnsafeSupport.isSupported();
     }
     
     private static Module SELF_MODULE;
     private static boolean CLASS_LOADER_EMITTERS_SUPPORTED;
     static {
         SELF_MODULE = ClassEmitters.class.getModule();
-        
-        boolean supported = false;
         Module javaModule = ClassLoader.class.getModule();
-        if (SELF_MODULE.canRead(javaModule)) {
-            // Sure, it can, but anyway... ))
-            // The next check is crucial -- is java.lang package opened
-            // either via command-line argument or when our code
-            // is shaded inside unnamed module
-            supported = javaModule.isOpen(ClassLoader.class.getPackageName(), SELF_MODULE);
-        }
-        CLASS_LOADER_EMITTERS_SUPPORTED = supported;
+        // The next check is crucial -- is java.lang package opened
+        // either via command-line argument or when our code
+        // is shaded inside unnamed module
+        CLASS_LOADER_EMITTERS_SUPPORTED = javaModule.isOpen(ClassLoader.class.getPackageName(), SELF_MODULE);
     }
 }

@@ -29,20 +29,21 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import net.tascalate.instrument.emitter.api.AllowDynamicClasses;
-import net.tascalate.instrument.examples.app.dynamic.OpenPackage;
 
-/**
- * 
- */
 /**
  * @author vsilaev
  *
  */
-// Alternative with --add-opens java.base/java.lang=net.tascalate.instrument.emitter;
+// Alternative 1: use classLoaders, define JVM arg --add-opens java.base/java.lang=net.tascalate.instrument.emitter
+// Alternative 2: use full-fledged config as in app9modular
+/*
+import net.tascalate.instrument.emitter.api.AllowDynamicClasses;
+import net.tascalate.instrument.examples.app.dynamic.OpenPackage; 
 @AllowDynamicClasses(OpenPackage.class)
+*/
+// Below is an alternative 3: modular but with simplified config via the ClassEmitter.of(classInThePackageToBeEndorsed)
 module net.tascalate.instrument.examples.app {
-requires net.tascalate.instrument.emitter;
+    requires net.tascalate.instrument.emitter;
 
     opens net.tascalate.instrument.examples.app.dynamic 
        to net.tascalate.instrument.emitter;

@@ -44,34 +44,27 @@ class ReflectionHelper {
         return lastDot > 0 ? className.substring(0, lastDot) : null;
     }
     
-    static ClassLoader getBestClassLoader(ClassLoader a, ClassLoader b) {
-        if (null == a) {
-            if (null == b) {
+    static ClassLoader getBestClassLoader(ClassLoader baseClassLoader, ClassLoader overrideClassLoader) {
+        if (null == baseClassLoader) {
+            if (null == overrideClassLoader) {
                 throw new IllegalArgumentException("Either of arguments should not be null");
             } else {
-                return b;
+                return overrideClassLoader;
             }
         } else {
-            if (null == b) {
-                return a;
-            } else if (a == b) {
-                return b;
-            } else if (a instanceof ClassEmitter) {
-                if (b instanceof ClassEmitter) {
-                    // resolve by hierarchy
-                } else {
-                    return a;
-                }
-            } else if (b instanceof ClassEmitter) {
-                return b;
+            if (null == overrideClassLoader) {
+                return baseClassLoader;
+            } else if (baseClassLoader == overrideClassLoader) {
+                return overrideClassLoader;
             }
         }
-        if (isClassLoaderParent(a,b)) {
-            return a;
+        if (isClassLoaderParent(overrideClassLoader, baseClassLoader)) {
+            return overrideClassLoader;
         } else {
-            // Biased to second, it should be taken on account
-            // ClassEmitters pass b as an explicit parameter
-            return b;
+            throw new IllegalArgumentException(
+                "When specified \"overrideClassLoader\" " + overrideClassLoader.getClass().getName() + ") " +
+                "should be a child class loader of the \"baseClassLoader\" (" + baseClassLoader.getClass().getName() + ")" 
+            );
         }
     }
     

@@ -57,31 +57,25 @@ public class ModularPackagesDemo9 {
                            String dynamicClassName) throws Exception {
         
         System.out.println(">>>>>>>>");
-        Module otherModule = classFromModule.getModule();
-        System.out.println("Instrumenting module " + otherModule);
+        Module myModule = classFromModule.getModule();
+        System.out.println("Instrumenting module " + myModule);
 
         @SuppressWarnings("unchecked")
         Class<? extends Runnable> cls = (Class<? extends Runnable>) 
-        defineClassDynamically(otherModule,
+        defineClassDynamically(myModule,
                                readResource(dynamicClassName.substring(dynamicClassName.lastIndexOf('.') + 1) + ".bytes"),
-                               SampleClassB.class.getProtectionDomain());
+                               classFromModule.getProtectionDomain());
 
         Runnable obj = cls.getConstructor().newInstance();
         obj.run();
         System.out.println("<<<<<<<<");
     }
 
-    private static Class<?> defineClassDynamically(Module module, 
+    private static Class<?> defineClassDynamically(Object moduleOrClass, 
                                                    byte[] classBytes,
                                                    ProtectionDomain pd) throws ClassEmitterException {
 
-        ClassEmitter definer = ClassEmitters.of(module, module.getClassLoader());
-        /*
-         * Effectively, the call above is just the same as ClassDefiners.of(module); Two
-         * args form is used to show that same pattern will be used with Java 6-8 and Java
-         * 9-11+ from instrumentation agents. Obviously, Java 6-8 agent will use
-         * ClassDefiners.of(null, classLoaderArg);
-         */
+        ClassEmitter definer = ClassEmitters.of(moduleOrClass);
 
         System.out.println("Got definer: " + definer);
         String className = ClassEmitters.classNameOf(classBytes);
@@ -91,7 +85,6 @@ public class ModularPackagesDemo9 {
             throw new IllegalArgumentException("No class definer exists for package " + packageName);
         }
 
-        System.out.println("Created definer: " + definer);
         System.out.println("Define class: " + className);
         return definer.defineClass(classBytes, pd);
     }

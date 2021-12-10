@@ -56,8 +56,7 @@ public class OpenPackagesDemo8 {
 
         @SuppressWarnings("unchecked")
         Class<? extends Runnable> cls = (Class<? extends Runnable>)defineClassDynamically(
-           null, // No module, ya!
-           ClassLoader.getSystemClassLoader(), 
+           OpenPackagesDemo8.class, // Any application class for Java 1.6-10, even from different package
            readResource(dynamicClassName.substring(dynamicClassName.lastIndexOf('.') + 1) + ".bytes"),
            OpenPackagesDemo8.class.getProtectionDomain()
        );
@@ -67,17 +66,11 @@ public class OpenPackagesDemo8 {
         System.out.println("<<<<<<<<");
     }
 
-    private static Class<?> defineClassDynamically(Object module, 
-                                                   ClassLoader classLoader, 
+    private static Class<?> defineClassDynamically(Object moduleOrClass,  
                                                    byte[] classBytes,
                                                    ProtectionDomain pd) throws ClassEmitterException {
 
-        ClassEmitter definer = ClassEmitters.of(module, classLoader);
-        /*
-         * Effectively, the call above is just the same as ClassDefiners.of(classLoader); 
-         * Two args form is used to show that same pattern will be used with Java 6-8 and 
-         * Java 9-11+ from instrumentation agents.
-         */
+        ClassEmitter definer = ClassEmitters.of(moduleOrClass);
 
         System.out.println("Got definer: " + definer);
         String className = ClassEmitters.classNameOf(classBytes);

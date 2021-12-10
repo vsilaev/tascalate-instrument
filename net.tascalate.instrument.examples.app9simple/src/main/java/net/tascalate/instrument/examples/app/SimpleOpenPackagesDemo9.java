@@ -38,6 +38,7 @@ import java.security.ProtectionDomain;
 import net.tascalate.instrument.emitter.spi.ClassEmitter;
 import net.tascalate.instrument.emitter.spi.ClassEmitterException;
 import net.tascalate.instrument.emitter.spi.ClassEmitters;
+import net.tascalate.instrument.examples.app.dynamic.OpenPackage;
 
 public class SimpleOpenPackagesDemo9 {
 
@@ -53,13 +54,12 @@ public class SimpleOpenPackagesDemo9 {
     static void demoModule(String dynamicClassName) throws Exception {
         
         System.out.println(">>>>>>>>");
-        Module otherModule = SimpleOpenPackagesDemo9.class.getModule();
-        System.out.println("Instrumenting module " + otherModule);
+        Module myModule = SimpleOpenPackagesDemo9.class.getModule();
+        System.out.println("Instrumenting module " + myModule);
 
         @SuppressWarnings("unchecked")
         Class<? extends Runnable> cls = (Class<? extends Runnable>) 
-        defineClassDynamically(otherModule,
-                               readResource(dynamicClassName.substring(dynamicClassName.lastIndexOf('.') + 1) + ".bytes"),
+        defineClassDynamically(readResource(dynamicClassName.substring(dynamicClassName.lastIndexOf('.') + 1) + ".bytes"),
                                SimpleOpenPackagesDemo9.class.getProtectionDomain());
 
         // Pretty questionable deprecation of API
@@ -68,26 +68,22 @@ public class SimpleOpenPackagesDemo9 {
         System.out.println("<<<<<<<<");
     }
 
-    private static Class<?> defineClassDynamically(Module module, 
-                                                   byte[] classBytes,
+    private static Class<?> defineClassDynamically(byte[] classBytes,
                                                    ProtectionDomain pd) throws ClassEmitterException {
-
-        //This will work if you run Java 9-11 
-        // without AllowDynamicClasses on module-info 
-        //ClassEmitters.Factory factory = ClassEmitters.of(OpenPackage.class, module.getClassLoader());
         
-        //This will work if you run in Java 9-10 (not later - sun.misc.Unsafe is used) 
+        //This will work with Java 1.6-17 
+        //without AllowDynamicClasses on module-info
+        //Pay attention that for Java 9+ you must use class 
+        //from the same package and add "opens <package> to net.tascalate.instrument.emitter"
+        ClassEmitter definer = ClassEmitters.of(OpenPackage.class);
+        
+        //This will work if you run in Java 1.6-10 (not later - sun.misc.Unsafe is used) 
         // without AllowDynamicClasses on module-info
-        //ClassEmitters.Factory factory = ClassEmitters.of(SayHello.class, module.getClassLoader());
+        //ClassEmitter definer = ClassEmitters.of(SimpleOpenPackagesDemo9.class);
         
-        //This will run on Java 9-11 with AllowDynamicClasses on module-info
-        ClassEmitter definer = ClassEmitters.of(module, module.getClassLoader());
-        /*
-         * Effectively, the call above is just the same as ClassDefiners.of(module); Two
-         * args form is used to show that same pattern will be used with Java 6-8 and Java
-         * 9-11+ from instrumentation agents. Obviously, Java 6-8 agent will use
-         * ClassDefiners.of(null, classLoaderArg);
-         */
+        //This will run on Java 9-17 with AllowDynamicClasses on module-info
+        //Module module = SimpleOpenPackagesDemo9.class.getModule();
+        //ClassEmitter definer = ClassEmitters.of(module);
 
         System.out.println("Got definer: " + definer);
         String className = ClassEmitters.classNameOf(classBytes);

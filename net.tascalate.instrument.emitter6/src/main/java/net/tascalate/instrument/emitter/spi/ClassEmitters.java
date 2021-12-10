@@ -41,10 +41,6 @@ public final class ClassEmitters {
     public static String classNameOf(byte[] classBytes) {
         return ReflectionHelper.getClassName(classBytes);
     }
-    
-    public static String packageNameOf(byte[] classBytes) {
-        return ReflectionHelper.packageNameOf(classNameOf(classBytes));
-    }
 
     public static ClassEmitter of(ClassLoader classLoader) {
         return of(classLoader, true);
@@ -52,25 +48,38 @@ public final class ClassEmitters {
     
     public static ClassEmitter of(ClassLoader classLoader, boolean mandatory) {
         if (null == classLoader) {
-            throw new NullPointerException();
+            throw new IllegalArgumentException("\"classLoader\" may not be null");
         }
         if (classLoader instanceof ClassEmitter) {
             return (ClassEmitter)classLoader;
         }
         return new ClassLoaderEmitter(classLoader);
     }
+    
+    public static ClassEmitter of(Object moduleOrClass) {
+        return of(moduleOrClass, true);
+    }
 
+    public static ClassEmitter of(Object moduleOrClass, boolean mandatory) {
+        if (null == moduleOrClass) {
+            throw new IllegalArgumentException("\"moduleOrClass\" may not be null");
+        }
+        return of(moduleOrClass, null, mandatory);
+    }
+
+    /*
     public static ClassEmitter of(Object moduleOrClass, ClassLoader classLoader) {
         return of(moduleOrClass, classLoader, true);
     }
+    */
     
-    public static ClassEmitter of(Object moduleOrClass, ClassLoader classLoader, boolean mandatory) {
-        ClassLoader altClassLoader = null;
+    static ClassEmitter of(Object moduleOrClass, ClassLoader classLoader, boolean mandatory) {
+        ClassLoader baseClassLoader = null;
         if (null != moduleOrClass) {
             if (Class.class == moduleOrClass.getClass()) {
                 // Ok, it's class
                 Class<?> clazz = (Class<?>)moduleOrClass;
-                altClassLoader = clazz.getClassLoader();
+                baseClassLoader = clazz.getClassLoader();
             } else {
                 String moduleClassName = "java.lang.Module"; 
                 // It's a final class, so name check is ok
@@ -84,6 +93,6 @@ public final class ClassEmitters {
             }
             // either class or module
         }
-        return ClassEmitters.of(ReflectionHelper.getBestClassLoader(altClassLoader, classLoader), mandatory);
+        return ClassEmitters.of(ReflectionHelper.getBestClassLoader(baseClassLoader, classLoader), mandatory);
     }
 }
