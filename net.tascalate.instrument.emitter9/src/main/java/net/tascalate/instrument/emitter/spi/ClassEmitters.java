@@ -178,15 +178,15 @@ public final class ClassEmitters {
         if (classLoader instanceof ClassEmitter) {
             // Custom class loader that defines method explicitly
             return (ClassEmitter)classLoader;
+        } else if (UnsafeSupport.isSupported()) {
+            // Short flirt with Java 9 / 10 
+            return new UnsafeEmitter(classLoader);
         } else if (CLASS_LOADER_EMITTERS_SUPPORTED) {
             // Good-old Java 8 class loader reflection
             // if Java 9 is started with option
             // --add-opens java.base/java.lang=net.tascalate.instrument.emitter
             // or to all unnamed modules and we are shaded inside unnamed module
             return new ClassLoaderEmitter(classLoader);
-        } else if (UnsafeSupport.isSupported()) {
-            // Short flirt with Java 9 / 10 
-            return new UnsafeEmitter(classLoader);
         } else {
             // Out of luck on this path
             if (mandatory) {
