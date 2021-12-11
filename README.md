@@ -1,4 +1,4 @@
-[![Maven Central](https://img.shields.io/maven-central/v/net.tascalate.instrument/net.tascalate.instrument.parent.svg)](https://search.maven.org/artifact/net.tascalate.instrument/net.tascalate.instrument.parent/1.1.1/jar) [![GitHub release](https://img.shields.io/github/release/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/releases/tag/1.1.1) [![license](https://img.shields.io/github/license/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/blob/master/LICENSE)
+[![Maven Central](https://img.shields.io/maven-central/v/net.tascalate.instrument/net.tascalate.instrument.parent.svg)](https://search.maven.org/artifact/net.tascalate.instrument/net.tascalate.instrument.parent/1.2.0/jar) [![GitHub release](https://img.shields.io/github/release/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/releases/tag/1.2.0) [![license](https://img.shields.io/github/license/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/blob/master/LICENSE)
 # Tascalate Instrument
 Utility classes to develop / use Java Agents across different Java versions (1.6 - 17+) - uniformly define classes in agent, attach agents dynamically, etc.
 
@@ -74,14 +74,14 @@ To better understand the issue, let us recall how [ClassFileTransformer](https:/
 ```
 default byte[]	transform(ClassLoader loader, 
                           String className, 
-                          Class<?> classBeingRedefined, 
+                          Class<?> classBeingRedefined, // NULL for initial loading!!!
                           ProtectionDomain protectionDomain, 
                           byte[] classfileBuffer)	
 
 default byte[]	transform(Module module, 
                           ClassLoader loader, 
                           String className, 
-                          Class<?> classBeingRedefined, 
+                          Class<?> classBeingRedefined, // NULL for initial loading!!!
                           ProtectionDomain protectionDomain, 
                           byte[] classfileBuffer)
 ```
@@ -113,6 +113,8 @@ import net.tascalate.instrument.examples.app.transformers.OpenPackageTransformer
 module net.tascalate.instrument.examples.app {
     requires net.tascalate.instrument.emitter;
 
+    // This is a canonical form, JavaAgent discussed below will add "opens" automatically 
+    // so yu may skip this and use only just annotation
     opens net.tascalate.instrument.examples.app.controllers 
        to net.tascalate.instrument.emitter;
        
@@ -125,18 +127,7 @@ module net.tascalate.instrument.examples.app {
 ```
 I.e. annotate the module with `@AllowDynamicClasses` and list all subclasses of `AbstractOpenPackage` as the value; additionally, open every target package to at least `net.tascalate.instrument.emitter` module. It's mandatory to use `requires net.tascalate.instrument.emitter` here while we are using its classes already. The library user completed her work to support defining classes dynamically. 
 
-Now let us see what Java Agent developer should do. Remember, that we have 2 different versions of the `ClassTransformer.transform` method? So agent developer should do the following, depending on the target Java version (pre-9 or post-9):
-```java
-import net.tascalate.instrument.emitter.spi.ClassEmitter;
-import net.tascalate.instrument.emitter.spi.ClassEmitterException;
-import net.tascalate.instrument.emitter.spi.ClassEmitters;
-...
-ClassEmitter emitter = ClassEmitters.of(null, classLoader); // Java 1.6-1.8
-ClassEmitter emitter = ClassEmitters.of(module, classLoader); // Java 9+
-```
-Obviously, the `module-info` of Java agent must include `requires net.tascalate.instrument.emitter`. Most probably, Java Agent developer will create multi-release JAR with two versions, each differs in a way it constructs `ClassEmiter`. 
-
-To simplify this task, the library includes abstract PortableClassFileTransformer class that already provides construction of the necessary `ClassEmitter`. The Java Agent developer must extend it and implement the single abstract method:
+Now let us see what Java Agent developer should do. To simplify this task, the library includes abstract PortableClassFileTransformer class that already provides construction of the necessary `ClassEmitter`. The Java Agent developer must extend it and implement the single abstract method:
 ```java
 import net.tascalate.instrument.emitter.spi.ClassEmitter;
 import net.tascalate.instrument.emitter.spi.ClassEmitterException;
@@ -145,31 +136,38 @@ import net.tascalate.instrument.emitter.spi.PortableClassFileTransformer;
 
 public class MyClassTransformer extends PortableClassFileTransformer {
     @Override
-    public byte[] transform(ClassEmitter emitter,
-                            Object module,
-                            ClassLoader loader,
-                            String className, Class<?> classBeingRedefined,
-                            ProtectionDomain protectionDomain, 
+    public byte[] transform(ClassEmitterFactory emitterFactory,
+                            Object              module,
+                            ClassLoader         loader,
+                            String              className, 
+                            Class<?>            classBeingRedefined,
+                            ProtectionDomain    protectionDomain, 
                             byte[] classfileBuffer) throws IllegalClassFormatException {
-                            
+        // Deciede whether class should be transformed and new classes should be generated.
+        // So emitter is created only when necessary to avoid overhead for classese these are skipped.               
+        ClassEmitter emitter = emitterFactory.create(true); // "true" means throw exception if no emitter available    
         // Define classes using ClassEmitter emitter 
+        emitter.defineClass(classfileBuffer, protectionDomain);
     }
 }
 ```
+You see that the rest of the code is identical and agnostic to the Java version used. All the burden to support "modular class definitions" is put to the end-user of the library. And to the Tascalate Instrument.Emitter library itself, sure. Obviously, the `module-info` of Java agent must include `requires net.tascalate.instrument.emitter`. 
 
-After this everything will be uniform across all Java versions:
-```java
-ClassEmitter emitter = ...; // created as above or get via parameter in PortableClassFileTransformer
-emitter.defineClass(classfileBuffer, protectionDomain);
-```
-You see that the rest of the code is identical and agnostic to the Java version used. All the burden to support "modular class definitions" is put to the end-user of the library. And to the Tascalate Instrument.Emitter library itself, sure.
 
 Additionally, Tascalate Instrument.Emitter provides a portable way to define classes not only to Java Agent developers, but to the authors of general bytecode modifications libraies, like [ByteBuddy](https://bytebuddy.net/) or [CGLib](https://github.com/cglib/cglib). If you check `ClassEmitters` sources, pay attention to the name of the first parameter:
 ```java
-public static ClassEmitter of(Object moduleOrClass, ClassLoader classLoader)
+public final class ClassEmitters {
+  ...
+  public static ClassEmitter of(Object moduleOrClass[, boolean mandatory = true])
+  ...
+}
 ```
-Yes, it accepts either `Class<?>` or `Module`. Or should be null otherwise. Depending on the currently running Java version (and other conditions, like named vs unnamed modules, JVM args), the method will return `ClassEmitter` that depends either on `Module` (if class is from `@AllowDynamicClasses` module) or for the `ClassLoader` of the class. So the author of the bytecode modification library is isolated from the specifics of Java, and may use portable `ClassEmitters.of(someSuperClass, someSuperClass.getClassLoader())` calls inside own code. And the end-user will adopt the module as necessary and when necessary.
+Yes, it accepts either `Class<?>` or `Module`. And depending on the JDK version you are developing for there are several options:
+1. Modern code: pass fully configured `Module` annotated with `@AllowDynamicClasses` and you will get `ClassEmitter` that is capable to define classes in the packages enumerated by classes passed to `@AllowDynamicClasses` (like in example above - `@AllowDynamicClasses({OpenPackageControllers.class, OpenPackageServices.class, OpenPackageTransformers.class})`). Each class defines a package to be opened. This will work for Java 9 - 17+.
+2. Portable code: pass a `Class` and you will get `ClassEmitter` that is capable to load classes in the same package as a package of the parameter class. You can omit `@AllowDynamicClasses` usages in this case - and you will get a single-package emitter. This option works for Java 1.6, 1.7, 1.8, 9 - 17+, i.e. just for any version of Java available so far.
 
+There is also an option [3] purely for the old-style code - `ClassEmitters.of(ClassLoader cl[, boolean mandatory = true])`. This old-fashioned approach works without warnings for Java 1.6, 1.7, 1.8, 9, 10. For Java 11+ you have to add `--add-opens java.base/java.lang=net.tascalate.instrument.emitter` to supress warnings (and errors for Hava 17+). In general, using this option is not recommended and it exists only to gradually migrate legacy code.
+                                                                                                                   
 It worth to mention, that developers, who creates own custom class loaders, may implement `ClassEmitter` interface for the custom class loader. And this emitter will take precedence in the emitter-resolution algorithm.
 
 To use the library, you have to add the single dependency:
