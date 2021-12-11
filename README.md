@@ -127,7 +127,7 @@ module net.tascalate.instrument.examples.app {
 ```
 I.e. annotate the module with `@AllowDynamicClasses` and list all subclasses of `AbstractOpenPackage` as the value; additionally, open every target package to at least `net.tascalate.instrument.emitter` module. It's mandatory to use `requires net.tascalate.instrument.emitter` here while we are using its classes already. The library user completed her work to support defining classes dynamically. 
 
-Now let us see what Java Agent developer should do. To simplify this task, the library includes abstract PortableClassFileTransformer class that already provides construction of the necessary `ClassEmitter`. The Java Agent developer must extend it and implement the single abstract method:
+Now let us see what Java Agent developer should do. To simplify this task, the library includes abstract `PortableClassFileTransformer` class that already provides construction of the necessary `ClassEmitter`. The Java Agent developer must extend it and implement the single abstract method:
 ```java
 import net.tascalate.instrument.emitter.spi.ClassEmitter;
 import net.tascalate.instrument.emitter.spi.ClassEmitterException;
@@ -145,7 +145,7 @@ public class MyClassTransformer extends PortableClassFileTransformer {
                             byte[] classfileBuffer) throws IllegalClassFormatException {
         // Deciede whether class should be transformed and new classes should be generated.
         // So emitter is created only when necessary to avoid overhead for classese these are skipped.               
-        ClassEmitter emitter = emitterFactory.create(true); // "true" means throw exception if no emitter available    
+        ClassEmitter emitter = emitterFactory.create();
         // Define classes using ClassEmitter emitter 
         emitter.defineClass(classfileBuffer, protectionDomain);
     }
@@ -166,7 +166,7 @@ Yes, it accepts either `Class<?>` or `Module`. And depending on the JDK version 
 1. Modern code: pass fully configured `Module` annotated with `@AllowDynamicClasses` and you will get `ClassEmitter` that is capable to define classes in the packages enumerated by classes passed to `@AllowDynamicClasses` (like in example above - `@AllowDynamicClasses({OpenPackageControllers.class, OpenPackageServices.class, OpenPackageTransformers.class})`). Each class defines a package to be opened. This will work for Java 9 - 17+.
 2. Portable code: pass a `Class` and you will get `ClassEmitter` that is capable to load classes in the same package as a package of the parameter class. You can omit `@AllowDynamicClasses` usages in this case - and you will get a single-package emitter. This option works for Java 1.6, 1.7, 1.8, 9 - 17+, i.e. just for any version of Java available so far.
 
-There is also an option [3] purely for the old-style code - `ClassEmitters.of(ClassLoader cl[, boolean mandatory = true])`. This old-fashioned approach works without warnings for Java 1.6, 1.7, 1.8, 9, 10. For Java 11+ you have to add `--add-opens java.base/java.lang=net.tascalate.instrument.emitter` to supress warnings (and errors for Hava 17+). In general, using this option is not recommended and it exists only to gradually migrate legacy code.
+There is also an option [3] purely for the old-style code - `ClassEmitters.of(ClassLoader cl[, boolean mandatory = true])`. This old-fashioned approach works without warnings for Java 1.6, 1.7, 1.8, 9, 10. For Java 11+ you have to add `--add-opens java.base/java.lang=net.tascalate.instrument.emitter` to supress warnings (and errors for Java 16+). In general, using this option is not recommended and it exists only to gradually migrate a legacy code.
                                                                                                                    
 It worth to mention, that developers, who creates own custom class loaders, may implement `ClassEmitter` interface for the custom class loader. And this emitter will take precedence in the emitter-resolution algorithm.
 
