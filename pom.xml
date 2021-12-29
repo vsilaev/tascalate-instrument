@@ -3,7 +3,7 @@
 
 	<groupId>net.tascalate.instrument</groupId>
 	<artifactId>net.tascalate.instrument.parent</artifactId>
-	<version>1.2.0</version>
+	<version>1.3.0</version>
 	<packaging>pom</packaging>
 
 	<name>Tascalate Instrument</name>
@@ -46,6 +46,7 @@
 		<module>net.tascalate.instrument.emitter</module>
 		<module>net.tascalate.instrument.attach9</module>
 		<module>net.tascalate.instrument.attach</module>
+		<module>net.tascalate.instrument.agent</module>
 		<module>net.tascalate.instrument.examples.app8</module>
 		<module>net.tascalate.instrument.examples.app9simple</module>
 		<module>net.tascalate.instrument.examples.moduleA</module>
@@ -58,8 +59,10 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<license.header>../LICENSE</license.header>
+		<tascalate.asmx.version>9.2.1</tascalate.asmx.version>
 		<jna.version>5.8.0</jna.version>
 	</properties>
+
 
 	<dependencyManagement>
 		<dependencies>
@@ -73,6 +76,11 @@
 				<artifactId>slf4j-simple</artifactId>
 				<version>1.8.0-beta2</version>
 				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+				<groupId>net.tascalate</groupId>
+				<artifactId>net.tascalate.asmx.commons</artifactId>
+				<version>${tascalate.asmx.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>
