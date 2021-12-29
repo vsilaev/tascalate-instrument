@@ -66,6 +66,7 @@ public abstract class AbstractInstrumentationAgent {
                 markTransformerPresence(t);
             }
         }
+        markTransformerPresence(this);
         log.info("Agent was installed");
     }
     
@@ -105,6 +106,7 @@ public abstract class AbstractInstrumentationAgent {
         for (ClassFileTransformer t : visited) {
             markTransformerPresence(t);
         }
+        markTransformerPresence(this);
         log.info("Agent was attached dynamically");
     }
     
@@ -162,7 +164,7 @@ public abstract class AbstractInstrumentationAgent {
         return Collections.emptySet();
     }    
     
-    protected boolean markTransformerPresence(ClassFileTransformer transormer) {
+    protected boolean markTransformerPresence(Object transormer) {
         if (null == transormer) {
             return false;
         }
