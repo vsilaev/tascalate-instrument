@@ -53,7 +53,7 @@ public abstract class AbstractInstrumentationAgent {
     }
     
     protected void install() throws Exception {
-        log.info("Attaching agent...");
+        log.info("Installing agent...");
         Set<ClassFileTransformer> visited = new HashSet<ClassFileTransformer>();
         for (boolean canRetransform : RETRANSFORM_OPTIONS) {
             for (ClassFileTransformer t : createTransformers(canRetransform)) {
@@ -71,7 +71,7 @@ public abstract class AbstractInstrumentationAgent {
     }
     
     protected void attach(Set<String> ownPackages) throws Exception {
-        log.info("Attaching agent...");
+        log.info("Attaching agent dynamically...");
 
         // Collect classes before ever adding transformer!
         Set<String> extendedOwnPackages = null == ownPackages ? new HashSet<String>() : new HashSet<String>(ownPackages);
