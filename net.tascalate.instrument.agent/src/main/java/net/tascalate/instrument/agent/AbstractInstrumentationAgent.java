@@ -164,11 +164,16 @@ public abstract class AbstractInstrumentationAgent {
         return Collections.emptySet();
     }    
     
-    protected boolean markTransformerPresence(Object transormer) {
-        if (null == transormer) {
+    protected boolean markTransformerPresence(Object transformer) {
+        if (null == transformer) {
             return false;
         }
-        String property = transormer.getClass().getName();
+        String property =
+            transformer instanceof IdentifiableInstrumentationObject ?
+            ((IdentifiableInstrumentationObject)transformer).id() 
+            :
+            transformer.getClass().getName();
+        
         boolean result;
         if ("true".equalsIgnoreCase(System.getProperty(property, "false"))) {
             if (log.isWarnEnabled()) {
