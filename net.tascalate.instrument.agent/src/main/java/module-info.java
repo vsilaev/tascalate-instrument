@@ -1,7 +1,7 @@
 /**
  * BSD 3-Clause License
  *
- * Copyright (c) 2019, Valery Silaev
+ * Copyright (c) 2019-2022, Valery Silaev
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@ module net.tascalate.instrument.agent {
     requires net.tascalate.asmx;
     requires net.tascalate.asmx.commons;
     
-    requires java.instrument;
+    requires transitive java.instrument;
     
     requires org.slf4j;
 }
