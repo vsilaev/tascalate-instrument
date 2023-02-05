@@ -49,6 +49,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.annotation.Documented;
 import java.lang.instrument.ClassDefinition;
@@ -62,12 +63,12 @@ import net.tascalate.asmx.commons.LocalVariablesSorter;
 
 class RuntimeBytecodeInjector {
     
-    private static final String CLASS = "java.lang.invoke.InnerClassLambdaMetafactory";
+    private static final String LAMBDA_METAFACTORY_CLASS_NAME = "java.lang.invoke.InnerClassLambdaMetafactory";
     
     static boolean isInjectionApplied() {
         Class<?> cls;
         try {
-            cls = ClassLoader.getSystemClassLoader().loadClass(CLASS);
+            cls = ClassLoader.getSystemClassLoader().loadClass(LAMBDA_METAFACTORY_CLASS_NAME);
         } catch (ClassNotFoundException ex) {
             throw new RuntimeException(ex);
         }
@@ -146,7 +147,7 @@ class RuntimeBytecodeInjector {
             }
         };
 
-        ClassDefinition original = loadClassDefinition(CLASS);
+        ClassDefinition original = loadClassDefinition(LAMBDA_METAFACTORY_CLASS_NAME);
         ClassReader classReader = new ClassReader(new ByteArrayInputStream(original.getDefinitionClassFile()));
         CW classWriter = new CW(classReader, 0);
 
@@ -178,34 +179,7 @@ class RuntimeBytecodeInjector {
     }
     
     static void installTransformer(final LambdaClassTransformer transformer) {
-        System.setOut(new PrintStream(System.out, true) {
-            @Override
-            public void print(Object o) {
-                if (o instanceof Object[]) {
-                    Object[] params = (Object[])o;
-                    if (params.length == 3 &&
-                        RuntimeBytecodeInjector.isValidCaller(params[0]) &&    
-                        params[1] instanceof Class &&
-                        params[2] instanceof byte[]) {
-                        
-                        byte[] inBytes = (byte[])params[2];
-                        byte[] outBytes = inBytes;
-                        try {
-                            outBytes = transformer.transform((Class<?>)params[1], inBytes);
-                        } catch (Throwable ex) {
-                            
-                        }
-                        params[2] = outBytes == null ? inBytes : outBytes;
-                        return;
-                    }
-                }
-                super.println(o);
-            }
-        });        
-    }
-    
-    private static boolean isValidCaller(Object o) {
-        return o != null && CLASS.equals(o.getClass().getName());
+        System.setOut(new HookedPrintStream(transformer, System.out, true));        
     }
     
     private static ClassDefinition loadClassDefinition(Class<?> clazz) throws IOException {
@@ -231,4 +205,47 @@ class RuntimeBytecodeInjector {
         return loadClassDefinition(Class.forName(className));
     }
 
+    private static class HookedPrintStream extends PrintStream {
+        private final LambdaClassTransformer transformer;
+        private final boolean nestedHook;
+        HookedPrintStream(LambdaClassTransformer transformer, OutputStream out, boolean autoFlush) {
+            super(out, autoFlush);
+            this.transformer = transformer;
+            // Check for the chain - use class name instead of class reference to handle shadowed agents
+            this.nestedHook = HookedPrintStream.class.getName().equals(out.getClass().getName());
+        }
+        
+        @Override
+        public void print(Object o) {
+            if (o instanceof Object[]) {
+                Object[] params = (Object[])o;
+                if (params.length == 3 &&
+                    isValidCaller(params[0]) &&    
+                    params[1] instanceof Class &&
+                    params[2] instanceof byte[]) {
+                    
+                    // If separate agents created a chain
+                    if (nestedHook) {
+                        super.print(o);
+                    }
+                    
+                    byte[] inBytes = (byte[])params[2];
+                    byte[] outBytes = inBytes;
+                    try {
+                        outBytes = transformer.transform((Class<?>)params[1], inBytes);
+                    } catch (Throwable ex) {
+                        
+                    }
+                    params[2] = outBytes == null ? inBytes : outBytes;
+                    return;
+                }
+            }
+            super.print(o);
+        }
+        
+        
+        private static boolean isValidCaller(Object o) {
+            return o != null && RuntimeBytecodeInjector.LAMBDA_METAFACTORY_CLASS_NAME.equals(o.getClass().getName());
+        }
+    }
 }
