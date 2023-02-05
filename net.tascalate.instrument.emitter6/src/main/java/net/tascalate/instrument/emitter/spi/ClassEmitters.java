@@ -31,7 +31,6 @@
  */
 package net.tascalate.instrument.emitter.spi;
 
-import net.tascalate.instrument.emitter.spi.ClassEmitter;
 import net.tascalate.instrument.emitter.spi.ClassEmitters;
 
 public final class ClassEmitters {

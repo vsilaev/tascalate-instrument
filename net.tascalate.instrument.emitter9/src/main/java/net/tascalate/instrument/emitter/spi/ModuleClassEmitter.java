@@ -44,7 +44,6 @@ import java.util.stream.Stream;
 
 import net.tascalate.instrument.emitter.api.AbstractOpenPackage;
 import net.tascalate.instrument.emitter.api.AllowDynamicClasses;
-import net.tascalate.instrument.emitter.spi.ClassEmitter;
 
 class ModuleClassEmitter implements ClassEmitter {
 

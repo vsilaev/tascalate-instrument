@@ -37,7 +37,6 @@ import java.util.Objects;
 
 import net.tascalate.instrument.emitter.api.AbstractOpenPackage;
 import net.tascalate.instrument.emitter.api.AllowDynamicClasses;
-import net.tascalate.instrument.emitter.spi.ClassEmitter;
 import net.tascalate.instrument.emitter.spi.ClassEmitters;
 
 public final class ClassEmitters {

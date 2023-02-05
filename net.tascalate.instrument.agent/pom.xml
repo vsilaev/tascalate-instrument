@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>net.tascalate.instrument</groupId>
 		<artifactId>net.tascalate.instrument.parent</artifactId>
-		<version>1.3.0</version>
+		<version>1.3.1</version>
 		<relativePath>../</relativePath>
 	</parent>
 
@@ -64,17 +64,13 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration> 
+					<release>6</release> 
+				</configuration>
+			</plugin>
 		</plugins>
-        	<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-javadoc-plugin</artifactId>
-					<configuration> 
-						<release>6</release> 
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 </project>

@@ -1,4 +1,4 @@
-[![Maven Central](https://img.shields.io/maven-central/v/net.tascalate.instrument/net.tascalate.instrument.parent.svg)](https://search.maven.org/artifact/net.tascalate.instrument/net.tascalate.instrument.parent/1.3.0/jar) [![GitHub release](https://img.shields.io/github/release/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/releases/tag/1.3.0) [![license](https://img.shields.io/github/license/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/blob/master/LICENSE)
+[![Maven Central](https://img.shields.io/maven-central/v/net.tascalate.instrument/net.tascalate.instrument.parent.svg)](https://search.maven.org/artifact/net.tascalate.instrument/net.tascalate.instrument.parent/1.3.1/jar) [![GitHub release](https://img.shields.io/github/release/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/releases/tag/1.3.1) [![license](https://img.shields.io/github/license/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/blob/master/LICENSE)
 # Tascalate Instrument
 Utility classes to develop / use Java Agents across different Java versions (1.6 - 17+) - uniformly define classes in agent, attach agents dynamically, etc.
 
@@ -53,7 +53,7 @@ To add JNI (or actually, [JNA](https://github.com/java-native-access/jna)) attac
 <dependency>
     <groupId>net.java.dev.jna</groupId>
     <artifactId>jna</artifactId>
-    <version>5.8.0</version>
+    <version>5.13.0</version>
 </dependency>
 ```
 2. Alter `module-info.java` of your application to add JNA module (obviously, this step is not necessary for Java 1.6-1.8 applications):

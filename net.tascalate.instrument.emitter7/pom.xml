@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>net.tascalate.instrument</groupId>
 		<artifactId>net.tascalate.instrument.parent</artifactId>
-		<version>1.3.0</version>
+		<version>1.3.1</version>
 		<relativePath>../</relativePath>
 	</parent>
 
@@ -33,32 +33,28 @@
 					<debuglevel>none</debuglevel>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>animal-sniffer-maven-plugin</artifactId>
+				<configuration>
+					<!-- False alarm for classes shaded from attach9 -->
+					<ignores>
+						<ignore>java.lang.invoke.MethodHandle</ignore>
+					</ignores>
+					<signature>
+						<groupId>org.codehaus.mojo.signature</groupId>
+						<artifactId>java17</artifactId>
+						<version>1.0</version>
+					</signature>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration> 
+					<release>7</release> 
+				</configuration>
+			</plugin>
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>animal-sniffer-maven-plugin</artifactId>
-					<configuration>
-						<!-- False alarm for classes shaded from attach9 -->
-						<ignores>
-							<ignore>java.lang.invoke.MethodHandle</ignore>
-						</ignores>
-						<signature>
-							<groupId>org.codehaus.mojo.signature</groupId>
-							<artifactId>java17</artifactId>
-							<version>1.0</version>
-						</signature>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-javadoc-plugin</artifactId>
-					<configuration> 
-						<release>7</release> 
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 </project>
