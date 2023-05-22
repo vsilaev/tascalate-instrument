@@ -144,7 +144,7 @@ public class MyClassTransformer extends PortableClassFileTransformer {
                             ProtectionDomain    protectionDomain, 
                             byte[] classfileBuffer) throws IllegalClassFormatException {
         // Deciede whether class should be transformed and new classes should be generated.
-        // So emitter is created only when necessary to avoid overhead for classese these are skipped.               
+        // So emitter is created only when necessary to avoid overhead for classese these are skipped.
         ClassEmitter emitter = emitterFactory.create(true /*msut be available or exception*/);
         // Define classes using ClassEmitter emitter 
         emitter.defineClass(classfileBuffer, protectionDomain);
