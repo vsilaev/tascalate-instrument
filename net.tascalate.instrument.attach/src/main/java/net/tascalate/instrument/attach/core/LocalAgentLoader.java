@@ -101,7 +101,10 @@ public class LocalAgentLoader extends AbstractAgentLoader implements SafeAgentLo
 
     void attach(String jarFile, String param, long pid) {
         if (null == vmAttach) {
-            throw new AgentLoaderException(ERROR_MESSAGES);
+            throw new AgentLoaderException(
+                getClass().getName() + " is unavailable in current environment",                     
+                null, ERROR_MESSAGES
+            );
         }
 
         Throwable exception = null;

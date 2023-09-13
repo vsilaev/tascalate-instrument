@@ -48,12 +48,11 @@ public class AgentLoaderException extends RuntimeException {
     }
 
     public AgentLoaderException(String message, Throwable cause) {
-        super(message, cause);
-        errorMessages = Collections.emptyList();
+        this(message, cause, Collections.<String>emptyList());
     }
 
-    public AgentLoaderException(List<String> errorMessages) {
-        super();
+    public AgentLoaderException(String message, Throwable cause, List<String> errorMessages) {
+        super(message, cause);
         this.errorMessages = errorMessages;
     }
 

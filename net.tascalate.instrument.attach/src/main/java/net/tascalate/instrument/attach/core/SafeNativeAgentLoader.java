@@ -35,21 +35,43 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.tascalate.instrument.attach.api.AgentLoader;
 import net.tascalate.instrument.attach.api.AgentLoaderException;
 
 public class SafeNativeAgentLoader extends AbstractAgentLoader implements SafeAgentLoader {
 
     @Override
     public boolean isAvailable() {
-        return ERROR_MESSAGES.isEmpty();
+        if (ERROR_MESSAGES.isEmpty()) {
+            try {
+                // Ensure class is loaded and linked successfully
+                NativeAgentLoader.INSTANCE.toString();
+            } catch (UnsatisfiedLinkError ex) {
+                return false;
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public void attach(String agentJarPath, String agentParams) {
         if (ERROR_MESSAGES.isEmpty()) {
-            NativeAgentLoader.INSTANCE.attach(agentJarPath, agentParams);
+            AgentLoader delegate;
+            try {
+                delegate = NativeAgentLoader.INSTANCE;
+            } catch (UnsatisfiedLinkError ex) {
+                throw new AgentLoaderException(
+                    "Unable to create JVM/Instrument native (JNI) api bridge, most probably you are using JRE rather than JDK", ex
+                );
+            }
+            delegate.attach(agentJarPath, agentParams);
         } else {
-            throw new AgentLoaderException(ERROR_MESSAGES);
+            throw new AgentLoaderException(
+                getClass().getPackage().getName() + ".NativeAgentLoader is unavailable in current environment", 
+                null, ERROR_MESSAGES
+            );
         }
     }
 
