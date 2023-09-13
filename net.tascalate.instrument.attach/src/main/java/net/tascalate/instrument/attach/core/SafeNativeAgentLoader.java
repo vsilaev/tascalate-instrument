@@ -63,21 +63,23 @@ public class SafeNativeAgentLoader extends AbstractAgentLoader implements SafeAg
                 delegate = NativeAgentLoader.INSTANCE;
             } catch (UnsatisfiedLinkError ex) {
                 throw new AgentLoaderException(
-                    "Unable to create JVM/Instrument native (JNI) api bridge, most probably you are using JRE rather than JDK", ex
+                    unavailable(), ex,
+                    Collections.singletonList("Unable to create JVM/Instrument native (JNI) api bridge, most probably you are using JRE rather than JDK")
                 );
             }
             delegate.attach(agentJarPath, agentParams);
         } else {
-            throw new AgentLoaderException(
-                getClass().getPackage().getName() + ".NativeAgentLoader is unavailable in current environment", 
-                null, ERROR_MESSAGES
-            );
+            throw new AgentLoaderException(unavailable(), null, ERROR_MESSAGES);
         }
     }
 
     @Override
     public String toString() {
         return getClass().getName() + "@@@" + NativeAgentLoader.INSTANCE.toString();
+    }
+    
+    private static String unavailable() {
+        return SafeNativeAgentLoader.class.getPackage().getName() + ".NativeAgentLoader is unavailable in current environment";
     }
 
     private static final List<String> ERROR_MESSAGES;
