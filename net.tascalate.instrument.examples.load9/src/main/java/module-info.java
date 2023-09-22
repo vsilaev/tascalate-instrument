@@ -38,6 +38,18 @@
  */
 module net.tascalate.instrument.examples.app {
     requires net.tascalate.instrument.attach;
-    // Otherwise JNA classes are not visible 
+    
+    // Option 1: use native JNA attach, works with JDK & JRE
+    // This option takes precedence over anothers, so just uncomment to use
+    /*
     requires com.sun.jna;
+    */
+    
+    // Option 2: use JDK.Attach java module, works only with JDK
+    // The following command-line argument is required to use local agent loader:
+    //
+    // -Djdk.attach.allowAttachSelf=true
+    //
+    // Otherwise external agent loader will be used
+    requires jdk.attach;
 }

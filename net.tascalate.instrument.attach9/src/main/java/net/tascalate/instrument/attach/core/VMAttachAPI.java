@@ -29,20 +29,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/**
- * @author vsilaev
- *
- */
-module net.tascalate.instrument.attach {
-    exports net.tascalate.instrument.attach.api;
-    
-    // NativeAgentLoader, set to non-optional -- available anyway, so do not bother users
-    requires java.instrument;
-    
-    // LocalAgentLoader -- something to think about, what if Oracle removes it in JDK 15?
-    requires static jdk.attach;
-    // NativeAgentLoader, optional dependency -- but it enables everything
-    requires static com.sun.jna;
+package net.tascalate.instrument.attach.core;
 
-    requires java.logging;
+abstract class VMAttachAPI {
+    abstract void attach(String jarFile, String param, long pid, boolean isInsideFork) throws Exception;
 }

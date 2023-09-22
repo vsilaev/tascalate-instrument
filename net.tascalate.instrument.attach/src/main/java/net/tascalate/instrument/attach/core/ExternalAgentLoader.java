@@ -108,7 +108,9 @@ public class ExternalAgentLoader extends AbstractAgentLoader implements SafeAgen
                 AbstractAgentLoader.class,
                 SafeAgentLoader.class, 
                 LocalAgentLoader.class, 
-                CurrentProcess.class
+                CurrentProcess.class,
+                VMAttachAPI.class,
+                VMAttachImpl.class
             };
             
             File runnableJar = createJarFile(new HashSet<Class<?>>(Arrays.asList(classes)), ExternalAgentLoader.class);

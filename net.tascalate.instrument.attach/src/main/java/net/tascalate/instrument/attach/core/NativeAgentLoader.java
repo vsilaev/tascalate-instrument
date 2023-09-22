@@ -82,5 +82,5 @@ class NativeAgentLoader extends AbstractAgentLoader {
     static final AgentLoader INSTANCE = new NativeAgentLoader();
 
     private static final LibJVM LIB_JVM = Native.load(LibJVM.class);
-    private static final LibInstrument LIB_INSTRUMENT = Native.load(LibInstrument.class);
+    private static final LibInstrument LIB_INSTRUMENT = Native.load("instrument", LibInstrument.class);
 }

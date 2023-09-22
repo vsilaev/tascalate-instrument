@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>net.tascalate.instrument</groupId>
 		<artifactId>net.tascalate.instrument.parent</artifactId>
-		<version>1.3.3</version>
+		<version>1.4.0</version>
 		<relativePath>../</relativePath>
 	</parent>
 
@@ -62,7 +62,7 @@
 							<includeArtifactIds>net.tascalate.instrument.attach9</includeArtifactIds>
 							<type>jar</type>
 							<outputDirectory>${project.build.outputDirectory}/META-INF/versions/9</outputDirectory>
-							<includes>**/CurrentProcess.class,**/LocalAgentLoader.class</includes>
+							<includes>**/CurrentProcess.class,**/LocalAgentLoader.class,**/VMAttachAPI.class,**/VMAttachImpl.class</includes>
 							<failOnMissingClassifierArtifact>true</failOnMissingClassifierArtifact>
 						</configuration>
 					</execution>

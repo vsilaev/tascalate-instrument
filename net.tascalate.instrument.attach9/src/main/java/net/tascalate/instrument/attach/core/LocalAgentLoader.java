@@ -29,21 +29,11 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/**
- * @author vsilaev
- *
- */
 package net.tascalate.instrument.attach.core;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.tools.attach.AgentInitializationException;
-import com.sun.tools.attach.AgentLoadException;
-import com.sun.tools.attach.AttachNotSupportedException;
-import com.sun.tools.attach.VirtualMachine;
 
 import net.tascalate.instrument.attach.api.AgentLoaderException;
 
@@ -51,6 +41,7 @@ public class LocalAgentLoader extends AbstractAgentLoader implements SafeAgentLo
 
     private final static Logger LOGGER = Logger.getLogger(LocalAgentLoader.class.getName());
     private final boolean forkExternalAttachIfNecessary;
+    private final boolean isInsideFork;
 
     public LocalAgentLoader() {
         this(true);
@@ -58,15 +49,18 @@ public class LocalAgentLoader extends AbstractAgentLoader implements SafeAgentLo
 
     public LocalAgentLoader(boolean forkExternalAttachIfNecessary) {
         this.forkExternalAttachIfNecessary = forkExternalAttachIfNecessary;
+        this.isInsideFork = false;
     }
 
     public LocalAgentLoader(File alternativeToolsJar) {
         this.forkExternalAttachIfNecessary = false;
+        /* This constructor is the only one used by ExternalAgentLoader */
+        this.isInsideFork = true;
     }
 
     @Override
     public boolean isAvailable() {
-        return IS_SELF_ATTACH_POSSIBLE || forkExternalAttachIfNecessary;
+        return DELEGATE != null && (IS_SELF_ATTACH_POSSIBLE || forkExternalAttachIfNecessary);
     }
 
     public void attach(String jarFile, String param) throws IllegalStateException {
@@ -74,6 +68,9 @@ public class LocalAgentLoader extends AbstractAgentLoader implements SafeAgentLo
     }
 
     void attach(String jarFile, String param, long pid) {
+        if (null == DELEGATE) {
+            throw new AgentLoaderException(LocalAgentLoader.class.getName() + " is unavailable in current environment", DELEGATE_ERROR);
+        }
         long ownPid = CurrentProcess.pid();
         if (ownPid == pid) {
             // Self-attach
@@ -91,39 +88,44 @@ public class LocalAgentLoader extends AbstractAgentLoader implements SafeAgentLo
                 }
             }
         }
-
+        
         try {
-            VirtualMachine vm = VirtualMachine.attach(String.valueOf(pid));
-            try {
-                vm.loadAgent(jarFile, param);
-            } finally {
-                vm.detach();
-            }
-        } catch (AttachNotSupportedException ex) {
+            DELEGATE.attach(jarFile, param, pid, isInsideFork);
+        } catch (AgentLoaderException ex) {
+            // Already converted
+            throw ex;
+        } catch (Exception ex) {
             if (forkExternalAttachIfNecessary) {
                 new ExternalAgentLoader(null).attach(jarFile, param, ownPid);
             } else {
                 throw new AgentLoaderException(ex);
             }
-        } catch (IOException ex) {
-            throw new AgentLoaderException("Agent injection not supported on this platform due to unknown reason", ex);
-        } catch (AgentInitializationException | AgentLoadException ex) {
-            throw new AgentLoaderException("Internal error in Java Agent", ex);
         }
     }
 
     boolean isExternalAttachPossible() {
         return true;
     }
-
+    
     @Override
     public String toString() {
-        return getClass().getName() + "[v9, load-method=local-attach, is-availabel=" + IS_SELF_ATTACH_POSSIBLE + "]";
+        return getClass().getName() + "[v9, load-method=local-attach, self-attach=" + IS_SELF_ATTACH_POSSIBLE + "]";
     }
 
     private static final boolean IS_SELF_ATTACH_POSSIBLE;
+    private static final VMAttachAPI DELEGATE;
+    private static final Throwable DELEGATE_ERROR;
 
     static {
         IS_SELF_ATTACH_POSSIBLE = Boolean.getBoolean("jdk.attach.allowAttachSelf");
+        VMAttachAPI delegate = null;
+        Throwable delegateError = null;
+        try {
+            delegate = new VMAttachImpl();
+        } catch (Error ex) {
+            delegateError = ex;
+        }
+        DELEGATE = delegate;
+        DELEGATE_ERROR = delegateError;
     }
 }
