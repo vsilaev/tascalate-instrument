@@ -108,7 +108,9 @@ import net.tascalate.instrument.examples.app.controllers.OpenPackageControllers;
 import net.tascalate.instrument.examples.app.services.OpenPackageServices;
 import net.tascalate.instrument.examples.app.transformers.OpenPackageTransformers;
 
-@AllowDynamicClasses({OpenPackageControllers.class, OpenPackageServices.class, OpenPackageTransformers.class})
+@AllowDynamicClasses({OpenPackageControllers.class, 
+                      OpenPackageServices.class, 
+                      OpenPackageTransformers.class})
 module net.tascalate.instrument.examples.app {
     requires net.tascalate.instrument.emitter;
 
