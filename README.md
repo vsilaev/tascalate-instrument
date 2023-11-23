@@ -54,11 +54,11 @@ module net.tascalate.instrument.examples.app {
     /* other dependecies */
 }
 ```
-If you are ready to add a dependency to a third-party library to your code, then `com.sun.jna` (available at [GitHub JNA](https://github.com/java-native-access/jna)) is a recommended way while it's more efficient. You may avoid hardcoding this dependency in sources and use `--add-modules com.sun.jna` in command line. By the way, you can use JNA-base implementation with JDK 1.6-1.8 as well -- just add a runtime dependency to your class path. 
+If you are ready to add a dependency to a third-party library to your code, then `com.sun.jna` (available at [GitHub JNA](https://github.com/java-native-access/jna)) is a recommended way while it's more efficient. You may avoid hardcoding this dependency in sources and use `--add-modules com.sun.jna` in command line. By the way, you can use JNA-based implementation with JDK 1.6-1.8 as well -- just add a runtime dependency to your class path. 
 
 In a similar way you can avoid hardcoding the dependency to `jdk.attach` in the code - just remove `requires jdk.attach` from `module-info.java` and append `--add-modules jdk.attach` to the command line instead.
 
-Next, what to do if you have to run your application with JRE Java 9+ or it may be run both with JDK/JRE? The answer is:
+Next, what to do if you have to run your application with JRE Java 9+ or it must run with both JDK and JRE environments? The answer is:
 1. Don't use `requires jdk.attach` directive in `module-info.java`
 2. Supply `--add-modules jdk.attach` OR `--add-modules com.sun.jna` command-line argument when running application with JDK
 3. Supply `--add-modules com.sun.jna` command-line argument when running application with JRE (as long as JRE doesn't include `jdk.attach`)
