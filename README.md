@@ -1,4 +1,4 @@
-[![Maven Central](https://img.shields.io/maven-central/v/net.tascalate.instrument/net.tascalate.instrument.parent.svg)](https://search.maven.org/artifact/net.tascalate.instrument/net.tascalate.instrument.parent/1.3.3/jar) [![GitHub release](https://img.shields.io/github/release/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/releases/tag/1.3.3) [![license](https://img.shields.io/github/license/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/blob/master/LICENSE)
+[![Maven Central](https://img.shields.io/maven-central/v/net.tascalate.instrument/net.tascalate.instrument.parent.svg)](https://search.maven.org/artifact/net.tascalate.instrument/net.tascalate.instrument.parent/1.4.0/jar) [![GitHub release](https://img.shields.io/github/release/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/releases/tag/1.4.0) [![license](https://img.shields.io/github/license/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/blob/master/LICENSE)
 # Tascalate Instrument
 Utility classes to develop / use Java Agents across different Java versions (1.6 - 17+) - uniformly define classes in agent, attach agents dynamically, etc.
 
@@ -39,31 +39,30 @@ import net.tascalate.instrument.attach.api.AgentLoaders;
 AgentLoaders.attach("./javaflow.instrument-continuations.jar", null);
 ```
 Both methods takes a path to the Java Agent JAR archive as a first parameter and an optional agent's arguments as a second parameter.
-For Java 9+ applications it's necessary to add a dependency to the Tascalate Instrument Attach module:
-```java
-module net.tascalate.instrument.examples.app {
-    requires net.tascalate.instrument.attach;
-}
-```
-With this setup you will get working and portable code to attach Java Agents to the currently running application. But not the most optimal one, however. See, by default, for Java 9+ applications this code will create a small executable JAR to attach an agent to the current JVM from the external process and overcome self-attach restrictions. The better option is still possible, and it involves native calls via JNI - hence, it's not enabled by default. 
+The code above will remain the same for JDK 1.6-1.8 AND JDK/JRE 9+. However, running with Java 9+ requires additional configuration of the modules.
 
-To add JNI (or actually, [JNA](https://github.com/java-native-access/jna)) attach, you have to change the following:
-1. Add corresponding JNA dependecy:
-```xml
-<dependency>
-    <groupId>net.java.dev.jna</groupId>
-    <artifactId>jna</artifactId>
-    <version>5.13.0</version>
-</dependency>
-```
-2. Alter `module-info.java` of your application to add JNA module (obviously, this step is not necessary for Java 1.6-1.8 applications):
+First, let us start with Java 9+ applications running on JDK. It's necessary to add a dependency to the Tascalate Instrument Attach module and either `jdk.attach` or `com.sun.jna` module (third-party):
 ```java
 module net.tascalate.instrument.examples.app {
     requires net.tascalate.instrument.attach;
+    requires jdk.attach;
+    // Alternative approach
+    /*
     requires com.sun.jna;
+    */
+
+    /* other dependecies */
 }
 ```
-No changes to the code that invokes `AgentLoaders.attach(...)` or `AgentLoaders.getDefault().attach(...)` are required! And the code may still be used with all supported Java versions (1.6 - 17+).
+If you are ready to add a dependency to a third-party library to your code, then `com.sun.jna` (available at [GitHub JNA](https://github.com/java-native-access/jna)) is a recommended way while it's more efficient. You may avoid hardcoding this dependency in sources and use `--add-modules com.sun.jna` in command line. By the way, you can use JNA-base implementation with JDK 1.6-1.8 as well -- just add a runtime dependency to your class path. 
+
+In a similar way you can avoid hardcoding the dependency to `jdk.attach` in the code - just remove `requires jdk.attach` from `module-info.java` and append `--add-modules jdk.attach` to the command line instead.
+
+Next, what to do if you have to run your application with JRE Java 9+ or it may be run both with JDK/JRE? The answer is:
+1. Don't use `requires jdk.attach` directive in `module-info.java`
+2. Supply `--add-modules jdk.attach` OR `--add-modules com.sun.jna` command-line argument when running application with JDK
+3. Supply `--add-modules com.sun.jna` command-line argument when running application with JRE (as long as JRE doesn't include `jdk.attach`)
+4. As an alternative to [2] and [3]: use `requires com.sun.jna` in `module-info.java`.
 
 Footnote. I'm aware that similar functionality exists in several libraries, like [ByteBuddy](https://bytebuddy.net/). But it's either tied very hard to the library itself, or requires some extra dependencies, so I decided to roll-out my own solution with the only and _optional_ dependency to JNA. 
 
