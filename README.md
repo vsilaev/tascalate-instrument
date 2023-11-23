@@ -115,7 +115,7 @@ module net.tascalate.instrument.examples.app {
     requires net.tascalate.instrument.emitter;
 
     // This is a canonical form, JavaAgent discussed below will add "opens" automatically 
-    // so yu may skip this and use only just annotation
+    // so yu may skip this and use just the module annotation
     opens net.tascalate.instrument.examples.app.controllers 
        to net.tascalate.instrument.emitter;
        
