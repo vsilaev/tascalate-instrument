@@ -124,6 +124,14 @@ module net.tascalate.instrument.examples.app {
        to net.tascalate.instrument.emitter;       
 }
 ```
+..where each of `OpenPackageControllers`, `OpenPackageServices`, `OpenPackageTransformers` is defined as:
+```java
+package net.tascalate.instrument.examples.app.controllers;
+
+import net.tascalate.instrument.emitter.api.AbstractOpenPackage;
+
+public final class OpenPackageControllers extends AbstractOpenPackage {}
+```
 I.e. annotate the module with `@AllowDynamicClasses` and list all subclasses of `AbstractOpenPackage` as the value; additionally, open every target package to at least `net.tascalate.instrument.emitter` module. It's mandatory to use `requires net.tascalate.instrument.emitter` here while we are using its classes already. The library user completed her work to support defining classes dynamically. 
 
 Now let us see what Java Agent developer should do. To simplify this task, the library includes abstract `PortableClassFileTransformer` class that already provides construction of the necessary `ClassEmitter`. The Java Agent developer must extend it and implement the single abstract method:
