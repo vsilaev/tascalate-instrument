@@ -44,6 +44,7 @@ module net.tascalate.instrument.examples.app {
     /*
     requires com.sun.jna;
     */
+    // Or try append `--add-modules com.sun.jna` to command line
     
     // Option 2: use JDK.Attach java module, works only with JDK
     // The following command-line argument is required to use local agent loader:
