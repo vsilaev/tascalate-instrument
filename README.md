@@ -1,6 +1,6 @@
-[![Maven Central](https://img.shields.io/maven-central/v/net.tascalate.instrument/net.tascalate.instrument.parent.svg)](https://search.maven.org/artifact/net.tascalate.instrument/net.tascalate.instrument.parent/1.5.0/jar) [![GitHub release](https://img.shields.io/github/release/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/releases/tag/1.5.0) [![license](https://img.shields.io/github/license/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/blob/master/LICENSE)
+[![Maven Central](https://img.shields.io/maven-central/v/net.tascalate.instrument/net.tascalate.instrument.parent.svg)](https://search.maven.org/artifact/net.tascalate.instrument/net.tascalate.instrument.parent/1.6.0/jar) [![GitHub release](https://img.shields.io/github/release/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/releases/tag/1.6.0) [![license](https://img.shields.io/github/license/vsilaev/tascalate-instrument.svg)](https://github.com/vsilaev/tascalate-instrument/blob/master/LICENSE)
 # Tascalate Instrument
-Utility classes to develop / use Java Agents across different Java versions (1.6 - 23) - uniformly define classes in agent, attach agents dynamically, etc.
+Utility classes to develop / use Java Agents across different Java versions (1.6 - 25) - uniformly define classes in agent, attach agents dynamically, etc.
 
 Currently there are two functional areas covered by the library: **attach**-ing Java Agents dynamically and **emit**-ting bytecode dynamically. Let's review them in alphabetical order.
 
@@ -22,7 +22,7 @@ All in all, Tascalate Instrument Attach provides a way to attach Java Agents dyn
     <version>#actual-version#</version>
 </dependency>
 ```
-The library is a multi-release JAR that works with Java 1.6 - 23.
+The library is a multi-release JAR that works with Java 1.6 - 25.
 Next, in your code you are able to do the following:
 ```
 import net.tascalate.instrument.attach.api.AgentLoader;
@@ -172,8 +172,8 @@ public final class ClassEmitters {
 }
 ```
 Yes, it accepts either `Class<?>` or `Module`. And depending on the JDK version you are developing for there are several options:
-1. Modern code: pass fully configured `Module` annotated with `@AllowDynamicClasses` and you will get `ClassEmitter` that is capable to define classes in the packages enumerated by classes passed to `@AllowDynamicClasses` (like in example above - `@AllowDynamicClasses({OpenPackageControllers.class, OpenPackageServices.class, OpenPackageTransformers.class})`). Each class defines a package to be opened. This will work for Java 9 - 23.
-2. Portable code: pass a `Class` and you will get `ClassEmitter` that is capable to load classes in the same package as a package of the parameter class. You can omit `@AllowDynamicClasses` usages in this case - and you will get a single-package emitter. This option works for Java 1.6, 1.7, 1.8, 9 - 23, i.e. just for any version of Java available so far.
+1. Modern code: pass fully configured `Module` annotated with `@AllowDynamicClasses` and you will get `ClassEmitter` that is capable to define classes in the packages enumerated by classes passed to `@AllowDynamicClasses` (like in example above - `@AllowDynamicClasses({OpenPackageControllers.class, OpenPackageServices.class, OpenPackageTransformers.class})`). Each class defines a package to be opened. This will work for Java 9 - 25.
+2. Portable code: pass a `Class` and you will get `ClassEmitter` that is capable to load classes in the same package as a package of the parameter class. You can omit `@AllowDynamicClasses` usages in this case - and you will get a single-package emitter. This option works for Java 1.6, 1.7, 1.8, 9 - 25, i.e. just for any version of Java available so far.
 
 There is also an option [3] purely for the old-style code - `ClassEmitters.of(ClassLoader cl[, boolean mandatory = true])`. This old-fashioned approach works without warnings for Java 1.6, 1.7, 1.8, 9, 10. For Java 11+ you have to add `--add-opens java.base/java.lang=net.tascalate.instrument.emitter` to supress warnings/errors. In general, using this option is not recommended and it exists only to gradually migrate a legacy code.
                                                                                                                    

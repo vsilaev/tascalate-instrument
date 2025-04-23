@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>net.tascalate.instrument</groupId>
 		<artifactId>net.tascalate.instrument.parent</artifactId>
-		<version>1.5.0</version>
+		<version>1.6.0</version>
 		<relativePath>../</relativePath>
 	</parent>
 
@@ -115,7 +115,10 @@
 						<ignore>java.lang.ProcessBuilder</ignore>
 						<ignore>java.lang.ProcessBuilder$Redirect</ignore>
 						<ignore>com.sun.tools.attach.VirtualMachine</ignore>
-						</ignores>
+						<ignore>com.sun.tools.attach.AttachNotSupportedException</ignore>
+						<ignore>com.sun.tools.attach.AgentInitializationException</ignore>
+						<ignore>com.sun.tools.attach.AgentLoadException</ignore>
+					</ignores>
 					<signature>
 						<groupId>org.codehaus.mojo.signature</groupId>
 						<artifactId>java15</artifactId>
