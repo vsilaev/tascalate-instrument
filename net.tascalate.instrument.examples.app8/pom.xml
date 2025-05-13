@@ -19,8 +19,8 @@
 		<!-- Java 8 apps may enjoy just single dependency to  -->
 		<!-- multi-release JAR for both compile and run-time  -->
 		<dependency>
-			<groupId>net.tascalate.instrument</groupId>
-			<artifactId>net.tascalate.instrument.emitter</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${project.groupId}.emitter</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

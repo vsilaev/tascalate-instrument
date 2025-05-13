@@ -195,6 +195,11 @@
 					<artifactId>moditect-maven-plugin</artifactId>
 					<version>1.2.2.Final</version>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>3.8.1</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>

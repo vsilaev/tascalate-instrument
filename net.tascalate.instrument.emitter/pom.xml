@@ -15,29 +15,29 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>net.tascalate.instrument</groupId>
-			<artifactId>net.tascalate.instrument.emitter6</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${project.groupId}.emitter6</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>net.tascalate.instrument</groupId>
-			<artifactId>net.tascalate.instrument.emitter7</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${project.groupId}.emitter7</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>net.tascalate.instrument</groupId>
-			<artifactId>net.tascalate.instrument.emitter9</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${project.groupId}.emitter9</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>net.tascalate.instrument</groupId>
-			<artifactId>net.tascalate.instrument.emitter11</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${project.groupId}.emitter11</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 			<optional>true</optional>
@@ -88,7 +88,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.8.1</version>
 				<executions>
 					<execution>
 						<id>unpack-sources-6-7</id>
@@ -98,7 +97,7 @@
 						</goals>
 						<configuration>
 							<includeGroupIds>${project.groupId}</includeGroupIds>
-							<includeArtifactIds>net.tascalate.instrument.emitter6</includeArtifactIds>
+							<includeArtifactIds>${project.groupId}.emitter6</includeArtifactIds>
 							<classifier>sources</classifier>
 							<type>jar</type>
 							<outputDirectory>${project.build.directory}/gen_sources</outputDirectory>
@@ -117,7 +116,7 @@
 						</goals>
 						<configuration>
 							<includeGroupIds>${project.groupId}</includeGroupIds>
-							<includeArtifactIds>net.tascalate.instrument.emitter9</includeArtifactIds>
+							<includeArtifactIds>${project.groupId}.emitter9</includeArtifactIds>
 							<classifier>sources</classifier>
 							<type>jar</type>
 							<outputDirectory>${project.build.directory}/gen_sources</outputDirectory>
