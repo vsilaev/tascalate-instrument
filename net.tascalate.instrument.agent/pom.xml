@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>net.tascalate.instrument</groupId>
 		<artifactId>net.tascalate.instrument.parent</artifactId>
-		<version>1.6.0</version>
+		<version>1.7.0</version>
 		<relativePath>../</relativePath>
 	</parent>
 
@@ -59,7 +59,6 @@
 							<module>
 								<moduleInfoFile>src/main/java/module-info.java</moduleInfoFile>
 							</module>
-							<version>${project.version}</version>
 						</configuration>
 					</execution>
 				</executions>
