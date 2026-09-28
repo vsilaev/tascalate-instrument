@@ -3,12 +3,12 @@
 
 	<groupId>net.tascalate.instrument</groupId>
 	<artifactId>net.tascalate.instrument.parent</artifactId>
-	<version>1.7.0</version>
+	<version>1.8.0</version>
 	<packaging>pom</packaging>
 
 	<name>Tascalate Instrument</name>
 	<url>https://github.com/vsilaev/tascalate-instrument</url>
-	<description>Multi-version utility classes to develop / use with Java Agents with Java 1.6 - 17+</description>
+	<description>Multi-version utility classes to develop / use with Java Agents with Java 1.6 - 27+</description>
 
 	<licenses>
 		<license>
@@ -59,7 +59,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<license.header>../LICENSE</license.header>
-		<tascalate.asmx.version>9.9.1</tascalate.asmx.version>
+		<tascalate.asmx.version>9.10.1</tascalate.asmx.version>
 		<jna.version>5.14.0</jna.version>
 	</properties>
 
@@ -231,7 +231,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.6.1</version>
+				<version>3.2.4</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
