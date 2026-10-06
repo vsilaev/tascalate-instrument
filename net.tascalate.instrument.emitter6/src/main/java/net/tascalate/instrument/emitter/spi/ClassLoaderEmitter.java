@@ -132,21 +132,35 @@ class ClassLoaderEmitter implements ClassEmitter {
         }
     }
     
+    private static int getJavaVersion() {
+        // Use specification version instead of java.version
+        String version = System.getProperty("java.specification.version");
+        if (version == null || version.length() == 0) return 0;
+
+        // Handle legacy Java 8 ("1.8")
+        if (version.startsWith("1.")) {
+            // Safe because "1." is always followed by at least one digit
+            int dot2 = version.indexOf('.', 2);
+            if (dot2 == -1) {
+                return Integer.parseInt(version.substring(2));
+            }
+            return Integer.parseInt(version.substring(2, dot2));
+        }
+
+        // Handle modern Java ("11", "21", "22-ea")
+        // Just read digits until we hit a non-digit character
+        int end = 0;
+        while (end < version.length() && Character.isDigit(version.charAt(end))) {
+            end++;
+        }
+        
+        return (end == 0) ? 0 : Integer.parseInt(version.substring(0, end));
+    }
     
     private static final ClassLoaderAPI CLASS_LOADER_API;
     
     static {
-        String version = System.getProperty("java.version");
-        
-        if (version.startsWith("1.")) {
-            version = version.substring(2, version.indexOf('.', 2));
-        } else {
-            int dot = version.indexOf(".");
-            if (dot > 0) { 
-                version = version.substring(0, dot); 
-            }
-        } 
-        int javaVersion = Integer.parseInt(version);
+        int javaVersion = getJavaVersion();
         if (javaVersion < 7) {
             CLASS_LOADER_API = new J6ClassLoaderAPI();
         } else if (javaVersion < 9) {
